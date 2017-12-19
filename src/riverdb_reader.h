@@ -82,15 +82,17 @@ public:
         return _row_size;
     }
 
+    unsigned long long get_data_size() {
+        return _reader->get_data_size();
+    }
+
     template <class T> void get_value(std::string& bin_str, T * val) {
 	    *val = *(static_cast<T *>(static_cast<void *>(const_cast<char *>(bin_str.c_str()))));
-        //std::cout << "[" << *(static_cast<T *>(static_cast<void *>(const_cast<char *>(bin_str.c_str())))) << "]";
     } 
 
     
 private:
     std::vector<RowBinaryColMeta> _col_metas;
-    //BinaryMMapReader _reader;
     IFileReader *_reader;
     std::string _split;
     std::unordered_set<std::string> _filter_cols;

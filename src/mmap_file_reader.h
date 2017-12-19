@@ -24,6 +24,8 @@ public:
     int read(char* &buf, int size);
 
     int read_col(std::string& val, bool is_scan = false) override; 
+    
+    int read_row(char*&  row_data, int& size);
 
     int read_col(char*& buf, int& len);
 
@@ -39,6 +41,11 @@ public:
     }
     unsigned long long get_data_start() override {
         return _data_start;
+    }
+    void load(char* buf, unsigned long long buf_size) override; 
+
+    unsigned long long get_data_size() override {
+        return _file_size - _data_start;
     }
 
 private:

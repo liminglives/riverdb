@@ -55,8 +55,6 @@ void RiverDBReader::read_header() {
     }
 
     // read column data type
-    //_reader.readline(buf, buf_len);
-    //line.assign(buf, buf_len);
     line.clear();
     _reader->readline(line);
     //std::cout << line << std::endl;
@@ -110,7 +108,6 @@ int RiverDBReader::read_row(std::vector<std::string>& vals) {
 template <>
 void RiverDBReader::get_value(std::string& bin_str, std::string* val) {
     *val = bin_str;
-    //std::cout << "[" << bin_str << "]" << std::endl;
 }
 
 } // namespace RiverDB

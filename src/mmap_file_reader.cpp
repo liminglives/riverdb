@@ -32,6 +32,10 @@ MMapFileReader::MMapFileReader(const std::string& file) {
     }
 }
 
+void MMapFileReader::load(char* buf, unsigned long long buf_size) {
+    memcpy(buf, _buf, buf_size);
+}
+
 int MMapFileReader::readline(std::string& line) {
     char* buf = NULL;
     int len = 0;
@@ -116,5 +120,6 @@ int MMapFileReader::read_col(char*& buf, int& len) {
     //std::cout << "read_len:" << read_len << " mark:" << mark  << std::endl;
     return RET_OK;
 }
+
 
 } // namespace RiverDB

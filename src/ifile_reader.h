@@ -21,6 +21,10 @@ public:
 
     virtual unsigned long long get_data_start() = 0; 
 
+    virtual unsigned long long get_data_size() = 0;
+
+    virtual void load(char* buf, unsigned long long buf_size) = 0; 
+
 };
 
 } // namespace RiverDB

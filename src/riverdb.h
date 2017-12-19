@@ -11,8 +11,6 @@ public:
 
     void append(const std::vector<std::string>& row);
 
-    
-
 private:
     std::vector<unsigned int> _time_list;
     char* _data;

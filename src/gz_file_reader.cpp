@@ -13,6 +13,8 @@ GZFileReader::GZFileReader(const std::string& fname) {
         std::cout << "reader gz open error" << std::endl;
         Throw("reader gz open failed");
     }
+    std::cout << "gz file_size: " << _gf->have;
+    _file_size = _gf->have;
 }
 
 GZFileReader::~GZFileReader() {
@@ -68,6 +70,18 @@ int GZFileReader::read_col(std::string& col, bool is_scan) {
     }
 
     return RET_OK;
+}
+
+void GZFileReader::load(char* data_buf, unsigned long long data_buf_size) {
+    int remain_size = data_buf_size;
+    char* buf_start = data_buf;
+    int readn = 0;
+    while (remain_size > 0) {
+        readn = remain_size;
+        ret_readn = gz_read(_gf, buf_start, readn);
+        remain_size -= ret_readn;
+        buf_start = buf_start + ret_readn;
+    }
 }
 
 int GZFileReader::gz_read(int start, int size) {

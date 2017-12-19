@@ -48,5 +48,7 @@ std::string decode_str(const std::string& file);
 
 bool is_gzfile(const std::string& fname);
 
+unsigned int get_file_size(const std::string& fname);
+
 } // namespace Util
 } // namespace RiverDB

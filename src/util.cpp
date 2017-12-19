@@ -1,6 +1,7 @@
 #include "util.h"
 
 #include <chrono>
+#include <sys/stat.h>
 
 namespace RiverDB {
 namespace Util {
@@ -152,6 +153,12 @@ bool is_gzfile(const std::string& fname) {
     } else {
         return false;
     }
+}
+
+unsigned int get_file_size(const std::string& fname) {
+    struct _stat info;
+    _stat(fname.c_str(), &info);
+    return info.st_size;
 }
 
 } // namespace Util

@@ -35,6 +35,11 @@ public:
         return _data_start;
     }
 
+    virtual unsigned long long get_data_size() override {
+        return _file_size - _data_start;
+    }
+
+    void load(char* buf, unsigned long long buf_size) override;
 
 private:
     int gz_read(int start, int size); 
@@ -47,6 +52,7 @@ private:
     unsigned long long _cur = 0;
     unsigned long long _end = 0;
     unsigned long long _data_start = 0;
+    unsigned long long _file_size = 0;
 };
 
 } // namespace RiverDB

@@ -12,26 +12,26 @@ public:
     GZFileReader(const std::string& fname); 
     ~GZFileReader(); 
 
-    int readline(std::string& line); 
+    int readline(std::string& line) override; 
 
     int read(std::string& buf, int size, bool is_scan); 
 
-    int read_col(std::string& col, bool is_scan = false); 
+    int read_col(std::string& col, bool is_scan = false) override; 
 
-    unsigned long long get_cur() {
+    unsigned long long get_cur() override {
         return _cur;
     }
 
-    void set_cur(unsigned long long cur) {
+    void set_cur(unsigned long long cur) override {
         _cur = cur;
         _end = cur;
         gzseek(_gf, cur, SEEK_SET);
     }
 
-    void set_data_start(unsigned long long data_start) {
+    void set_data_start(unsigned long long data_start) override {
         _data_start = data_start;
     }
-    unsigned long long get_data_start() {
+    unsigned long long get_data_start() override {
         return _data_start;
     }
 

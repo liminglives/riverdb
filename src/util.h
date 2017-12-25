@@ -3,12 +3,17 @@
 #include <string>
 #include <chrono>
 #include <vector>
+#include <iostream>
 
 #include "defines.h"
 
 namespace RiverDB {
 
-#define Throw(x) do{throw RTTException(__FILE__,__LINE__,__FUNCTION__,(x));} while (0)
+#define Throw(x) do { throw RTTException(__FILE__,__LINE__,__FUNCTION__,(x));} while (0)
+
+#define Log(x) do { Print(__FILE__,__LINE__,__FUNCTION__,(x));} while (0)
+
+void Print(const std::string& file, int line, const std::string& func, const std::string& info="");
 
 class RTTException {
 public:
@@ -49,6 +54,12 @@ std::string decode_str(const std::string& file);
 bool is_gzfile(const std::string& fname);
 
 unsigned int get_file_size(const std::string& fname);
+
+template <class T> void get_value(char* data, T * val) {
+    *val = *(static_cast<T *>(static_cast<void *>(data)));
+} 
+
+
 
 } // namespace Util
 } // namespace RiverDB

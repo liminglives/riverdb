@@ -78,7 +78,7 @@ void GZFileReader::load(char* data_buf, unsigned long long data_buf_size) {
     int readn = 0;
     while (remain_size > 0) {
         readn = remain_size;
-        ret_readn = gz_read(_gf, buf_start, readn);
+        int ret_readn = gzread(_gf, buf_start, readn);
         remain_size -= ret_readn;
         buf_start = buf_start + ret_readn;
     }

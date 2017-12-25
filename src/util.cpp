@@ -4,6 +4,11 @@
 #include <sys/stat.h>
 
 namespace RiverDB {
+
+void Print(const std::string& file, int line, const std::string& func, const std::string& info) {
+    std::cout << file << ":" << line << " " << func << " " << info << std::endl;
+}
+
 namespace Util {
 
 void split(const std::string& src, const std::string& separator, std::vector<std::string>& dest) {
@@ -156,9 +161,17 @@ bool is_gzfile(const std::string& fname) {
 }
 
 unsigned int get_file_size(const std::string& fname) {
-    struct _stat info;
-    _stat(fname.c_str(), &info);
+    struct stat info;
+    stat(fname.c_str(), &info);
     return info.st_size;
+}
+
+template <>
+void get_value(char* data, std::string* val) {
+    int len = 0;
+    while (*(data + len) != '\0') { ++len; }
+
+    val->assign(data, len);
 }
 
 } // namespace Util

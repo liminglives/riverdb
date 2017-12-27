@@ -16,13 +16,13 @@ public:
     DataContainer();
     ~DataContainer();
 
-    bool init(const std::vector<std::string>& load_fpath_vec, 
-            const std::string& primary_key,
+    bool init(const std::string& primary_key,
             const std::string& index_key);
     bool load(const std::string& fpath);
+    //bool load(const std::vector<std::string>& load_fpath_vec);
 
     DataIndex* get_data_index(const std::string& kvalue);
-    RowReader* create_row_reader();
+    RowReader* new_row_reader();
     bool get(const std::string& kvalue, uint64_t ts, RowReader* row_reader);
     bool at(const std::string& kvalue, int index, RowReader* row_reader);
 

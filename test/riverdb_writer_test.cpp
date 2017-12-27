@@ -1,5 +1,6 @@
 #include "riverdb_writer.h"
 #include "riverdb_reader.h"
+#include "riverdb.h"
 
 #include "gtest/gtest.h"
 
@@ -53,7 +54,7 @@ TEST_F(RiverDBWriterTest, TestWriter) {
     _writer->push_col_meta("TS", RiverDB::Type_UINT64);
     _writer->push_col_meta("A", RiverDB::Type_STRING);
     _writer->push_col_meta("B", RiverDB::Type_INT32);
-    _writer->push_col_meta("C", RiverDB::Type_FLOAT);
+    _writer->push_col_meta("C", RiverDB::Type_DOUBLE);
     _writer->write_header();
 
     std::vector<std::string> row;
@@ -62,11 +63,11 @@ TEST_F(RiverDBWriterTest, TestWriter) {
     row.reserve(col_size);
     RiverDB::EmptyValue empty_value;
     for (int i = 0; i < 10; ++i) {
-        int32_t k = 11210 + i;
+        int32_t k = 11210 + i%3;
         uint64_t ts = 10 + i;
         std::string a = "col_a11";
         int32_t b = 2321;
-        float c = 1.23131211;
+        double c = 1.23131211;
 
         row.clear();
 
@@ -74,7 +75,7 @@ TEST_F(RiverDBWriterTest, TestWriter) {
         _writer->push_row<uint64_t>(ts, row);
         _writer->push_row<std::string>(a, row);
         _writer->push_row<RiverDB::EmptyValue>(empty_value, row);
-        _writer->push_row<float>(c, row);
+        _writer->push_row<double>(c, row);
 
         ASSERT_TRUE(_writer->write_row(row) == RiverDB::RET_OK); 
     }
@@ -84,6 +85,40 @@ TEST_F(RiverDBWriterTest, TestWriter) {
     ASSERT_TRUE(_reader->init() == RiverDB::RET_OK);
     delete _reader;
 
+}
+
+TEST_F(RiverDBWriterTest, TestRiverDB) {
+    try {
+    std::cout << "llllll"<< std::endl;
+    RiverDB::RiverDB* db = new RiverDB::RiverDB();
+    db->init("K", "TS");
+    db->load("./testdata/riverdb_test.rdb");
+    RiverDB::RowReader* row_reader = db->new_row_reader();
+    std::string kvalue;
+    RiverDB::Util::get_str_from_val(11210, kvalue);
+    db->at(kvalue, 1, row_reader);
+    
+    int32_t k = 0;
+    row_reader->get<int32_t>("K", &k);
+    ASSERT_TRUE(k == 11210);
+
+    uint64_t ts = 0;
+    row_reader->get<uint64_t>("TS", &ts);
+    ASSERT_TRUE(ts == 13);
+
+    std::string a;
+    row_reader->get<std::string>("A", &a);
+    ASSERT_TRUE(a == "col_all");
+
+    double c = 0.0;
+    row_reader->get<double>("C", &c);
+    ASSERT_TRUE(c == 1.23131211);
+
+    delete row_reader;
+    delete db;
+    } catch (RiverDB::RTTException& e) {
+        std::cout << e.info() << std::endl;
+    }
 }
 
 int main(int argc, char** argv) {

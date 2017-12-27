@@ -16,6 +16,7 @@ public:
     void append(uint64_t ts, char* data);
 
     char* get(unsigned int ts);
+    char* at(int index);
     //char* gt(unsigned int ts); // great than: >
     //char* ge(unsigned int ts); // great equal: >=
     //char* lt(unsigned int ts); // less than: <

@@ -32,18 +32,23 @@ int RowReader::read_col(unsigned int max_len) {
     unsigned int read_len = 0;
     char mark = _data[_cur++];
     unsigned int pos = _cur;
+    std::cout << mark << std::endl;
     if (mark == '\0') {
+        Log("string");
         while (pos < max_len && _data[pos] != '\0') {
             ++pos;
         }
         read_len = pos - _cur;
         ++pos;
     } else {
+        Log("other");
         read_len = mark - '0';
+        std::cout << read_len << std::endl;
         pos += read_len;
     }
     if (read_len + _cur > max_len) {
-        Throw("read overflow cur:" + std::to_string(_cur + read_len) + 
+        Throw("read overflow cur:" + std::to_string(_cur) + 
+                " readn:" + std::to_string(read_len) +
                 " max_len:" + std::to_string(max_len));
     }
     _index.push_back(_data + _cur);

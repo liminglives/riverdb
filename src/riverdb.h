@@ -1,5 +1,7 @@
 #pragma once
 
+#include "data_container.h"
+
 #include <string>
 #include <vector>
 
@@ -10,13 +12,18 @@ public:
     RiverDB();
     ~RiverDB();
 
-    bool load(const std::string& fpath);
+    bool init(const std::string& primary_key,
+            const std::string& index_key);
+    bool load(const std::string& fpath); 
+    
+    RowReader* new_row_reader();
 
-    void append(const std::vector<std::string>& row);
+    bool get(const std::string& kvalue, uint64_t ts, RowReader* row_reader);
+    bool at(const std::string& kvalue, int index, RowReader* row_reader);
+            
 
 private:
-    std::vector<unsigned int> _time_list;
-    char* _data;
+    DataContainer* _data_container;
 };
 
 } // namespace RiverDB

@@ -3,6 +3,8 @@
 #include <chrono>
 #include <sys/stat.h>
 
+#include "defines.h"
+
 namespace RiverDB {
 
 void Print(const std::string& file, int line, const std::string& func, const std::string& info) {
@@ -172,6 +174,13 @@ void get_value(char* data, std::string* val) {
     while (*(data + len) != '\0') { ++len; }
 
     val->assign(data, len);
+}
+
+template <> void get_str_from_val(const std::string& val, std::string& str) {
+    str = val;
+}
+template <> void get_str_from_val(const EmptyValue& val, std::string& str) {
+    str.clear();
 }
 
 } // namespace Util

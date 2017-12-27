@@ -23,4 +23,17 @@ char* DataIndex::get(unsigned int ts) {
     return it == _ts_data_map.end() ? NULL : it->second;
 }
 
+char* DataIndex::at(int index) {
+    unsigned int len = _ts_index.size();
+    if (index < 0) {
+        index = len + index;
+        if (index < 0) {
+            index = 0;
+        }
+    } else if (index >= len) {
+        index = len - 1;
+    }
+    return _ts_data_map[_ts_index[index]];
+}
+
 } // namespace RiverDB

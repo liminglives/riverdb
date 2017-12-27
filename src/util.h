@@ -59,6 +59,10 @@ template <class T> void get_value(char* data, T * val) {
     *val = *(static_cast<T *>(static_cast<void *>(data)));
 } 
 
+template <class T> 
+void get_str_from_val(const T& val, std::string& str) {
+    str.assign(static_cast<char*>(static_cast<void*>(const_cast<T *>(&val))), sizeof(T));
+}
 
 
 } // namespace Util

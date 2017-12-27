@@ -33,6 +33,7 @@ public:
     bool get(const std::string& col_name, T* value) {
         auto it = _col_index_map->find(col_name);
         if (it == _col_index_map->end()) {
+            Log("col_name:" + col_name + " not found");
             return false;
         }
         return at(it->second, value);

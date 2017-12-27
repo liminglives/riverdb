@@ -8,6 +8,7 @@ SET(SRC src/gz_file_reader.cpp
     src/data_container.cpp
     src/data_index.cpp
     src/row_reader.cpp
+    src/riverdb.cpp
     src/util.cpp)
 
 SET(CMAKE_CXX_FLAGS "-std=c++11 -g -ftest-coverage -fprofile-arcs -Wno-deprecated")
@@ -15,4 +16,4 @@ SET(CMAKE_CXX_FLAGS "-std=c++11 -g -ftest-coverage -fprofile-arcs -Wno-deprecate
 ADD_LIBRARY(riverdb STATIC ${SRC})
 SET_TARGET_PROPERTIES(riverdb PROPERTIES OUTPUT_NAME "riverdb")
 
-target_link_libraries(riverdb -lssl -lcrypto -lz)
+target_link_libraries(riverdb -lz)

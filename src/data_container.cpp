@@ -14,20 +14,25 @@ DataContainer::~DataContainer() {
     close();
 }
 
-bool DataContainer::init(const std::vector<std::string>& load_fpath_vec, const std::string& key, const std::string& index_key) {
+bool DataContainer::init(const std::string& key, const std::string& index_key) {
     _primary_key = key;
     _index_key = index_key;
 
-    _row_reader = new RowReader(&_col_metas, &_col_meta_map);
-
-    for (const auto& fpath : load_fpath_vec) {
-        if (!load(fpath)) {
-            Throw("load " + fpath + " failed");
-        }
-    }
 
     return true;
 }
+
+//bool load(const std::vector<std::string>& load_fpath_vec) {
+//    //std::vector<std::string> fpaths = load_fpath_vec;
+//    //std::sort(fpaths.begin(), fpaths.end());
+//
+//    for (const auto& fpath : load_fpath_vec) {
+//        if (!load(fpath)) {
+//            Throw("load " + fpath + " failed");
+//        }
+//    }
+//    return true;
+//}
 
 void DataContainer::close() {
     for (auto it : _data_index_map) {
@@ -39,7 +44,7 @@ void DataContainer::close() {
     }
 }
 
-RowReader* DataContainer::create_row_reader() {
+RowReader* DataContainer::new_row_reader() {
     return new RowReader(&_col_metas, &_col_meta_map);
 }
 
@@ -53,6 +58,24 @@ bool DataContainer::get(const std::string& kvalue, uint64_t ts, RowReader* row_r
     char* data = di->get(ts);
     if (data == NULL) {
         Log("kvalue " + kvalue + " has no " + std::to_string(ts));
+        return false;
+    }
+    
+    row_reader->init(data, std::numeric_limits<unsigned int>::max());
+
+    return true;
+}
+
+bool DataContainer::at(const std::string& kvalue, int index, RowReader* row_reader) {
+    DataIndex* di = get_data_index(kvalue);
+    if (di == NULL) {
+        Log("has no kvalue:" + kvalue);
+        return false;
+    }
+
+    char* data = di->at(index);
+    if (data == NULL) {
+        Log("out range " + kvalue + " " + std::to_string(index));
         return false;
     }
     
@@ -107,24 +130,27 @@ bool DataContainer::load(const std::string& fpath) {
     RiverDBReader reader(fpath);
     reader.read_header();
     const std::vector<RowBinaryColMeta>& col_metas = reader.get_col_metas();
+    if (!init_meta(col_metas)) {
+        Throw("illegal col_meta, path:" + fpath);
+    }
 
     unsigned long long data_size  = reader.get_data_size();
     char* buf = (char *)malloc(data_size);
     _buf_vec.push_back(buf);
 
-    //_row_reader = new RowReader(&_col_metas, &_col_meta_map);
+    RowReader row_reader(&_col_metas, &_col_meta_map);
     unsigned int start = 0;
     unsigned int remain = data_size;
 
     while (remain > 0) {
-        _row_reader->init(buf + start, remain);
+        row_reader.init(buf + start, remain);
         uint64_t ts = 0;
-        if (!_row_reader->get<uint64_t>(_index_key, &ts)) {
+        if (!row_reader.get<uint64_t>(_index_key, &ts)) {
             Throw("row_reader failed, fpath:" + fpath);
         }
 
         std::string kvalue;
-        if (!_row_reader->get<std::string>(_primary_key, &kvalue)) {
+        if (!row_reader.get<std::string>(_primary_key, &kvalue)) {
             Throw("row_reader failed, fpath:" + fpath);
         }
         auto it = _data_index_map.find(kvalue);
@@ -133,7 +159,7 @@ bool DataContainer::load(const std::string& fpath) {
         }
         _data_index_map[kvalue]->append(ts, buf + start);
 
-        unsigned int len = _row_reader->get_len();
+        unsigned int len = row_reader.get_len();
 
         start += len;
         remain -= len;

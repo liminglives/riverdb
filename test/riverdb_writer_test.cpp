@@ -1,4 +1,5 @@
 #include "riverdb_writer.h"
+#include "riverdb_reader.h"
 
 #include "gtest/gtest.h"
 
@@ -7,7 +8,42 @@ protected:
     virtual void SetUp() {}
 
     RiverDB::RiverDBWriter* _writer;
+    RiverDB::RiverDBReader* _reader;
 };
+
+TEST_F(RiverDBWriterTest, TestReadIllegalFile) {
+    int is_catch = 0;
+    try {
+        _reader = new RiverDB::RiverDBReader("unexist.binary");
+    } catch (RiverDB::RTTException& e) {
+        std::cout << e.info() << std::endl;
+        is_catch = 1;
+    }
+    ASSERT_TRUE(is_catch);
+
+    _reader = new RiverDB::RiverDBReader("./testdata/illegal_file_1.binary");
+    ASSERT_TRUE(_reader->init() != RiverDB::RET_OK);
+    delete _reader;
+
+    _reader = new RiverDB::RiverDBReader("./testdata/illegal_file_2.binary");
+    ASSERT_TRUE(_reader->init() != RiverDB::RET_OK);
+    delete _reader;
+
+    _reader = new RiverDB::RiverDBReader("./testdata/illegal_file_3.binary");
+    ASSERT_TRUE(_reader->init() != RiverDB::RET_OK);
+    delete _reader;
+
+    _reader = new RiverDB::RiverDBReader("./testdata/illegal_file_4.binary");
+    ASSERT_TRUE(_reader->init() != RiverDB::RET_OK);
+    delete _reader;
+
+}
+
+TEST_F(RiverDBWriterTest, TestReadLegalFile) {
+    _reader = new RiverDB::RiverDBReader("./testdata/legal_file.binary");
+    ASSERT_TRUE(_reader->init() == RiverDB::RET_OK);
+    delete _reader;
+}
 
 TEST_F(RiverDBWriterTest, TestWriter) {
     std::string file = "./testdata/write.rdb";
@@ -43,6 +79,10 @@ TEST_F(RiverDBWriterTest, TestWriter) {
         ASSERT_TRUE(_writer->write_row(row) == RiverDB::RET_OK); 
     }
     delete _writer;
+
+    _reader = new RiverDB::RiverDBReader(file);
+    ASSERT_TRUE(_reader->init() == RiverDB::RET_OK);
+    delete _reader;
 
 }
 

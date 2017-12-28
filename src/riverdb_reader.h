@@ -86,10 +86,11 @@ public:
         return _reader->get_data_size();
     }
 
+    void load_data(char* buf, unsigned long long buf_size);
+
     template <class T> void get_value(std::string& bin_str, T * val) {
 	    *val = *(static_cast<T *>(static_cast<void *>(const_cast<char *>(bin_str.c_str()))));
     } 
-
     
 private:
     std::vector<RowBinaryColMeta> _col_metas;

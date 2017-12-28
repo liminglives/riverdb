@@ -8,7 +8,7 @@ RowReader::RowReader(std::vector<RowBinaryColMeta>* col_metas,
     _col_metas(col_metas),
     _col_index_map(col_index_map), 
     _col_num(_col_metas->size()), 
-    _index(_col_num, NULL) {}
+    _index(_col_num) {}
 
 bool RowReader::init(char* data_start, unsigned int max_len) {
     _index.clear();
@@ -21,7 +21,7 @@ bool RowReader::init(char* data_start, unsigned int max_len) {
             Throw("read col error");
         }
     }
-    _len = _cur - 1;
+    _len = _cur;
     return true;
 }
 
@@ -32,18 +32,18 @@ int RowReader::read_col(unsigned int max_len) {
     unsigned int read_len = 0;
     char mark = _data[_cur++];
     unsigned int pos = _cur;
-    std::cout << mark << std::endl;
+    //std::cout << mark << std::endl;
     if (mark == '\0') {
-        Log("string");
+        //Log("string");
         while (pos < max_len && _data[pos] != '\0') {
             ++pos;
         }
         read_len = pos - _cur;
         ++pos;
     } else {
-        Log("other");
+        //Log("other");
         read_len = mark - '0';
-        std::cout << read_len << std::endl;
+        //std::cout << read_len << std::endl;
         pos += read_len;
     }
     if (read_len + _cur > max_len) {

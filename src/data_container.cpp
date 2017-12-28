@@ -137,6 +137,7 @@ bool DataContainer::load(const std::string& fpath) {
     unsigned long long data_size  = reader.get_data_size();
     char* buf = (char *)malloc(data_size);
     _buf_vec.push_back(buf);
+    reader.load_data(buf, data_size);
 
     RowReader row_reader(&_col_metas, &_col_meta_map);
     unsigned int start = 0;
@@ -153,8 +154,11 @@ bool DataContainer::load(const std::string& fpath) {
         if (!row_reader.get<std::string>(_primary_key, &kvalue)) {
             Throw("row_reader failed, fpath:" + fpath);
         }
+
+        Log("kvalue:" + kvalue);
         auto it = _data_index_map.find(kvalue);
         if (it == _data_index_map.end()) {
+            Log("new dataindex for " + kvalue);
             _data_index_map[kvalue] = new DataIndex(kvalue, _index_key);
         }
         _data_index_map[kvalue]->append(ts, buf + start);
@@ -164,7 +168,7 @@ bool DataContainer::load(const std::string& fpath) {
         start += len;
         remain -= len;
     }
-    std::cout << "load " << fpath << " completed" << std::endl;
+    Log("load " + fpath + " completed");
     return true;
 }
 

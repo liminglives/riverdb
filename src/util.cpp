@@ -8,7 +8,7 @@
 namespace RiverDB {
 
 void Print(const std::string& file, int line, const std::string& func, const std::string& info) {
-    std::cout << file << ":" << line << " " << func << " " << info << std::endl;
+    std::cout << file << ":" << line << " " << func << "(): " << info << std::endl;
 }
 
 namespace Util {

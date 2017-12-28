@@ -38,4 +38,9 @@ public:
 class EmptyValue {
 };
 
+struct Data {
+    char* data;
+    unsigned int len;
+};
+
 } // namespace RiverDB

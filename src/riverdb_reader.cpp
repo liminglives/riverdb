@@ -80,6 +80,10 @@ void RiverDBReader::read_header() {
     _reader->set_data_start(_reader->get_cur());
 }
 
+void RiverDBReader::load_data(char* buf, unsigned long long buf_size) {
+    _reader->load(buf, buf_size);
+}
+
 int RiverDBReader::read_row(std::vector<std::string>& vals) {
     int read_col_num = 0;
     std::string val;

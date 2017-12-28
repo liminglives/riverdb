@@ -34,7 +34,7 @@ MMapFileReader::MMapFileReader(const std::string& file) {
 }
 
 void MMapFileReader::load(char* buf, unsigned long long buf_size) {
-    memcpy(buf, _buf, buf_size);
+    memcpy(buf, _buf + _cur, buf_size);
 }
 
 int MMapFileReader::readline(std::string& line) {

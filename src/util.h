@@ -74,6 +74,14 @@ void get_str_from_val(const T& val, std::string& str) {
     str.assign(static_cast<char*>(static_cast<void*>(const_cast<T *>(&val))), sizeof(T));
 }
 
+template <class T> int push_row(const T& val, std::vector<std::string>& row) {
+    std::string str;
+    get_str_from_val<T>(val, str);
+    row.push_back(str);
+    return RET_OK;
+}
+
+
 
 } // namespace Util
 } // namespace RiverDB

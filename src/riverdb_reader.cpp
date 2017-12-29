@@ -30,11 +30,7 @@ void RiverDBReader::read_header() {
     char * buf = 0;
     int buf_len = 0;
 
-    // read column name
-    //_reader.readline(buf, buf_len);
-    //line.assign(buf, buf_len);
     _reader->readline(line);
-    //std::cout << line << std::endl;
     std::vector<std::string> arr;
     Util::split(line, _split, arr);
     if (arr.size() == 0) {
@@ -43,13 +39,11 @@ void RiverDBReader::read_header() {
     _col_size = arr.size();
     RowBinaryColMeta col_meta;
     _col_metas.reserve(arr.size());
-    //for (auto it = arr.begin(); it != arr.end(); ++it) {
     for (unsigned int i = 0; i < arr.size(); ++i) {
          if (_filter_cols.empty() || _filter_cols.find(arr[i]) != _filter_cols.end()) {
             col_meta._col_name = arr[i];
             _col_metas.push_back(col_meta);
 
-            //std::cout << arr[i] << std::endl;
             _filter_col_ids.insert(i);
         }
     }
@@ -57,7 +51,6 @@ void RiverDBReader::read_header() {
     // read column data type
     line.clear();
     _reader->readline(line);
-    //std::cout << line << std::endl;
     arr.clear();
     Util::split(line, _split, arr);
     if (arr.size() != _col_size) {

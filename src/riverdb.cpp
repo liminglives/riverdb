@@ -12,8 +12,8 @@ RiverDB::~RiverDB() {
 
 bool RiverDB::init(const std::string& primary_key,
             const std::string& index_key) {
-    _data_container = new DataContainer();
-    if (!_data_container->init(primary_key, index_key)) {
+    _data_container = new DataContainer(primary_key, index_key);
+    if (!_data_container->init()) {
         Throw("data container init failed");
     }
     return true;

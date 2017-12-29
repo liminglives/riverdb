@@ -1,4 +1,5 @@
 #include "riverdb_writer.h"
+#include "riverdb_reader.h"
 
 namespace RiverDB {
 
@@ -25,6 +26,19 @@ void RiverDBWriter::build_cols_dict(NormalFileReader& reader) {
 		}
 		_col_datatype_map[val[0]] = data_type;
 	}
+}
+
+int RiverDBWriter::load_col_metas(const std::string& file) {
+    RiverDBReader reader(file);
+    //int ret = reader.init();
+    //if (ret != RET_OK) {
+    //    Log("init RiverDBReader failed, file:" + file);
+    //    return ret;
+    //}
+    reader.read_header();
+    _col_metas = reader.get_col_metas();
+
+    return RET_OK;
 }
 
 void RiverDBWriter::convert(const std::string& csv_file, const std::string& dict_file, const std::string split) {
@@ -98,7 +112,7 @@ void RiverDBWriter::parse_line(const std::string& line, std::vector<std::string>
 int RiverDBWriter::write_binary_line(IFileWriter* writer, const std::vector<std::string>& vals) {
     if (vals.size() != _col_metas.size()) {
         //Throw("col val size is not equal to header col size");
-        std::cout << "col val size is not equal to header col size" << std::endl;
+        Log("col val size is not equal to header col size");
         return RET_ERROR;
 
     }
@@ -117,6 +131,10 @@ int RiverDBWriter::write_binary_line(IFileWriter* writer, const std::vector<std:
 }
 
 void RiverDBWriter::write_header(IFileWriter* writer) {
+    //if (_file_write_mode == FileOpenModeAppend) {
+    //    return;
+    //}
+
     std::string type_line;
     std::string name_line;
     for (auto it = _col_metas.begin(); it != _col_metas.end(); ++it) {
@@ -132,13 +150,13 @@ void RiverDBWriter::write_header(IFileWriter* writer) {
     writer->writeline(type_line);
 }
 
-template <> int RiverDBWriter::get_str_from_val(const std::string& val, std::string& str) {
-    str = val;
-    return RET_OK;
-}
-template <> int RiverDBWriter::get_str_from_val(const EmptyValue& val, std::string& str) {
-    str.clear();
-    return RET_OK;
-}
+//template <> int RiverDBWriter::get_str_from_val(const std::string& val, std::string& str) {
+//    str = val;
+//    return RET_OK;
+//}
+//template <> int RiverDBWriter::get_str_from_val(const EmptyValue& val, std::string& str) {
+//    str.clear();
+//    return RET_OK;
+//}
 
 } // namespace RiverDB

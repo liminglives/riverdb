@@ -8,8 +8,12 @@ namespace RiverDB {
 
 class NormalFileWriter : public IFileWriter {
 public:
-	NormalFileWriter(const std::string& file) : _file(file) {
-	    _out.open(_file, std::ifstream::out);
+	NormalFileWriter(const std::string& file, int mode = FileOpenModeWrite) : _file(file) {
+        if (mode == FileOpenModeAppend) {
+	        _out.open(_file, std::ofstream::app | std::ofstream::binary);
+        } else {
+	        _out.open(_file, std::ofstream::out | std::ofstream::binary);
+        }
 	}
 
 	~NormalFileWriter() {

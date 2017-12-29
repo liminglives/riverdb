@@ -13,12 +13,18 @@ namespace RiverDB {
 
 class RiverDBWriter {
 public:
-    RiverDBWriter(const std::string& out_file) {
+    RiverDBWriter(const std::string& out_file, int mode = FileOpenModeWrite) {
+        _file_write_mode = mode;
+        if (_file_write_mode == FileOpenModeAppend) {
+            if (load_col_metas(out_file) != RET_OK) {
+                Throw("load col metas, file:" + out_file);
+            }
+        }
         _is_gzfile = Util::is_gzfile(out_file);
         if (_is_gzfile) {
-            _writer = new GZFileWriter(out_file);
+            _writer = new GZFileWriter(out_file, mode);
         } else {
-            _writer = new NormalFileWriter(out_file);
+            _writer = new NormalFileWriter(out_file, mode);
         }
         if (_writer == NULL) {
             Throw("new writer failed");
@@ -29,11 +35,12 @@ public:
         delete _writer;
     }
 
-    template <class T> 
-    int get_str_from_val(const T& val, std::string& str) {
-        str.assign(static_cast<char*>(static_cast<void*>(const_cast<T *>(&val))), sizeof(T));
-        return RET_OK;
-    }
+    //template <class T> 
+    //int get_str_from_val(const T& val, std::string& str) {
+    //    str.assign(static_cast<char*>(static_cast<void*>(const_cast<T *>(&val))), sizeof(T));
+    //    return RET_OK;
+    //}
+
 
     int load_col_dict(const std::string& dict_file) {
         NormalFileReader dict_reader(dict_file);
@@ -62,10 +69,11 @@ public:
     }
 
     template <class T> int push_row(const T& val, std::vector<std::string>& row) {
-        std::string str;
-        get_str_from_val<T>(val, str);
-        row.push_back(str);
-        return RET_OK;
+        Util::push_row(val, row);
+        //std::string str;
+        //Util::get_str_from_val<T>(val, str);
+        //row.push_back(str);
+        //return RET_OK;
     }
 
     void push_col_meta(const RowBinaryColMeta& col_meta) {
@@ -94,6 +102,7 @@ private:
     void parse_line(const std::string& line, std::vector<std::string>& vals, const std::string& split); 
     int write_binary_line(IFileWriter* writer, const std::vector<std::string>& vals); 
     void write_header(IFileWriter* writer); 
+    int load_col_metas(const std::string& file);
 
 private:
     IFileWriter* _writer;
@@ -101,6 +110,7 @@ private:
 	std::unordered_map<std::string, DataType> _col_datatype_map;
     std::vector<RowBinaryColMeta> _col_metas;
     bool _is_gzfile = false;
+    int _file_write_mode;
 };
 
 } //  namespace RiverDB

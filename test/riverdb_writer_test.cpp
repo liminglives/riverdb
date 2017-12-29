@@ -46,6 +46,82 @@ TEST_F(RiverDBWriterTest, TestReadLegalFile) {
     delete _reader;
 }
 
+TEST_F(RiverDBWriterTest, TestAppendWriter) {
+    std::string file = "./testdata/append_write.rdb";
+    _writer = new RiverDB::RiverDBWriter(file);
+
+    _writer->push_col_meta("K", RiverDB::Type_INT32);
+    _writer->push_col_meta("TS", RiverDB::Type_UINT64);
+    _writer->push_col_meta("A", RiverDB::Type_STRING);
+    _writer->push_col_meta("B", RiverDB::Type_INT32);
+    _writer->push_col_meta("C", RiverDB::Type_DOUBLE);
+    _writer->write_header();
+
+    std::vector<std::string> row;
+    int col_size = _writer->get_col_size();
+    row.reserve(col_size);
+    RiverDB::EmptyValue empty_value;
+    for (int i = 0; i < 1; ++i) {
+        int32_t k = (11210 + i%3);
+        uint64_t ts = 10 + i;
+        std::string a = "col_a11";
+        int32_t b = 2321;
+        double c = 1.23131211;
+
+        row.clear();
+
+        _writer->push_row<int32_t>(k, row);
+        _writer->push_row<uint64_t>(ts, row);
+        _writer->push_row<std::string>(a, row);
+        _writer->push_row<RiverDB::EmptyValue>(empty_value, row);
+        _writer->push_row<double>(c, row);
+
+        ASSERT_TRUE(_writer->write_row(row) == RiverDB::RET_OK); 
+    }
+    delete _writer;
+
+    _reader = new RiverDB::RiverDBReader(file);
+    ASSERT_TRUE(_reader->init() == RiverDB::RET_OK);
+    delete _reader;
+
+
+    _writer = new RiverDB::RiverDBWriter(file, RiverDB::FileOpenModeAppend);
+    ASSERT_TRUE(col_size == _writer->get_col_size());
+    for (int i = 1; i < 2; ++i) {
+        int32_t k = (11210 + i%3);
+        uint64_t ts = 10 + i;
+        std::string a = "col_a11";
+        int32_t b = 2321;
+        double c = 1.23131211;
+
+        row.clear();
+
+        _writer->push_row<int32_t>(k, row);
+        _writer->push_row<uint64_t>(ts, row);
+        _writer->push_row<std::string>(a, row);
+        _writer->push_row<RiverDB::EmptyValue>(empty_value, row);
+        _writer->push_row<double>(c, row);
+
+        ASSERT_TRUE(_writer->write_row(row) == RiverDB::RET_OK); 
+    }
+    delete _writer;
+
+    _reader = new RiverDB::RiverDBReader(file);
+    ASSERT_TRUE(_reader->init() == RiverDB::RET_OK);
+    delete _reader;
+
+    bool is_catch = false;
+    try {
+        _writer = new RiverDB::RiverDBWriter("unexist.rdb", RiverDB::FileOpenModeAppend);
+    } catch (RiverDB::RTTException& e) {
+        std::cout << e.info() << std::endl;
+        is_catch = true;
+    }
+
+    ASSERT_TRUE(is_catch);
+
+}
+
 TEST_F(RiverDBWriterTest, TestWriter) {
     std::string file = "./testdata/write.rdb";
     _writer = new RiverDB::RiverDBWriter(file);
@@ -59,7 +135,6 @@ TEST_F(RiverDBWriterTest, TestWriter) {
 
     std::vector<std::string> row;
     int col_size = _writer->get_col_size();
-    std::string binary_val;
     row.reserve(col_size);
     RiverDB::EmptyValue empty_value;
     for (int i = 0; i < 10; ++i) {
@@ -150,6 +225,72 @@ TEST_F(RiverDBWriterTest, TestRiverDBWithStringTypeKey) {
     double c = 0.0;
     row_reader->get<double>("C", &c);
     ASSERT_TRUE(c == 1.23131211);
+
+    delete row_reader;
+    delete db;
+    } catch (RiverDB::RTTException& e) {
+        std::cout << e.info() << std::endl;
+    }
+}
+
+TEST_F(RiverDBWriterTest, TestRiverDBWriteAndIndex) {
+    try {
+    std::string file = "./testdata/riverdb_test2.rdb";
+    RiverDB::DataContainer* db = new RiverDB::DataContainer("K", "TS");
+    db->init();
+    db->load(file);
+
+    RiverDB::RowReader* row_reader = db->new_row_reader();
+
+    std::string kvalue; 
+    RiverDB::Util::get_str_from_val(11210, kvalue);
+    db->at(kvalue, 1, row_reader);
+    
+    int32_t k = 0;
+    row_reader->get<int32_t>("K", &k);
+    ASSERT_TRUE(k == 11210);
+    uint64_t ts = 0;
+    row_reader->get<uint64_t>("TS", &ts);
+    ASSERT_TRUE(ts == 13);
+    std::string a;
+    row_reader->get<std::string>("A", &a);
+    ASSERT_TRUE(a == "col_a11");
+    double c = 0.0;
+    row_reader->get<double>("C", &c);
+    ASSERT_TRUE(c == 1.23131211);
+
+    std::vector<std::string> row;
+    int col_size = _writer->get_col_size();
+    row.reserve(col_size);
+    int32_t kk = (11210);
+    uint64_t tts = 100;
+    std::string aa = "new_append";
+    int32_t bb = 2321;
+    double cc = 1.23;
+    RiverDB::Util::push_row<int32_t>(kk, row);
+    RiverDB::Util::push_row<uint64_t>(tts, row);
+    RiverDB::Util::push_row<std::string>(aa, row);
+    RiverDB::Util::push_row<int32_t>(bb, row);
+    RiverDB::Util::push_row<double>(cc, row);
+    db->append(row);
+
+    db->at(kvalue, -1, row_reader);
+ 
+    k = 0;
+    row_reader->get<int32_t>("K", &k);
+    ASSERT_TRUE(k == 11210);
+    ts = 0;
+    row_reader->get<uint64_t>("TS", &ts);
+    ASSERT_TRUE(ts == 100);
+    a = "";
+    row_reader->get<std::string>("A", &a);
+    ASSERT_TRUE(a == "new_append");
+    int32_t b = 0;
+    row_reader->get<int32_t>("B", &b);
+    ASSERT_TRUE(b == 2321);
+    c = 0.0;
+    row_reader->get<double>("C", &c);
+    ASSERT_TRUE(c == 1.23);
 
     delete row_reader;
     delete db;

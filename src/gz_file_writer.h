@@ -8,10 +8,14 @@ namespace RiverDB {
 
 class GZFileWriter : public IFileWriter {
 public:
-    GZFileWriter(const std::string& fname) {
-        _gf = gzopen(fname.c_str(), "wb");
+    GZFileWriter(const std::string& fname, int mode = FileOpenModeWrite) {
+        if (mode == FileOpenModeAppend) {
+            _gf = gzopen(fname.c_str(), "ab");
+        } else {
+            _gf = gzopen(fname.c_str(), "wb");
+        }
         if (_gf == NULL) {
-            std::cout << "writer gz open error" << std::endl;
+            Log("writer gz open error");
             Throw("gz open " + fname + " failed");
         }
     }

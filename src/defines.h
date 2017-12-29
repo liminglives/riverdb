@@ -4,6 +4,11 @@
 
 namespace RiverDB {
 
+enum EnumFileOpenMode {
+    FileOpenModeWrite = 0,
+    FileOpenModeAppend,
+};
+
 enum RETCODE {
 	RET_OK = 0,
 	RET_ERROR,

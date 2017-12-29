@@ -168,6 +168,50 @@ unsigned int get_file_size(const std::string& fname) {
     return info.st_size;
 }
 
+int binary_search(const std::vector<uint64_t>& ts_vec, uint64_t ts, int flag) {
+    int start = 0;
+    int end = ts_vec.size() - 1;
+    while (end >= start) {
+        int middle = (start + end) / 2;
+        if (ts_vec[middle] == ts) {
+            if (flag == BinarySearchLTFlag) {
+                return middle - 1;
+            } else if (flag == BinarySearchGTFlag) {
+                return middle + 1;
+            } 
+            return middle;
+        } else if (ts_vec[middle] > ts) {
+            end = middle - 1;
+        } else {
+            start = middle + 1;
+        }
+    }
+    switch (flag) {
+        case BinarySearchEqualFlag:
+            return -1;
+        case BinarySearchLEFlag:
+            return end;
+        case BinarySearchGEFlag:
+            return start;
+        case BinarySearchLTFlag:
+            return end;
+        case BinarySearchGTFlag:
+            return start;
+        default:
+            Log("illegal flag:" + std::to_string(flag));
+            return -1;
+    }
+}
+
+void sort_insert(std::vector<uint64_t>& ts_vec, uint64_t ts) {
+    if (ts_vec.empty() || ts_vec.back() <= ts) {
+        ts_vec.push_back(ts);
+    } else {
+        int pos = binary_search(ts_vec, ts, BinarySearchGEFlag);
+        ts_vec.insert(ts_vec.begin() + pos, ts);
+    }
+}
+
 template <>
 void get_value(char* data, std::string* val) {
     int len = 0;

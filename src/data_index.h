@@ -15,12 +15,13 @@ public:
 
     void append(uint64_t ts, char* data);
 
-    char* get(unsigned int ts);
+    char* get(uint64_t ts);
     char* at(int index);
-    //char* gt(unsigned int ts); // great than: >
-    //char* ge(unsigned int ts); // great equal: >=
-    //char* lt(unsigned int ts); // less than: <
-    //char* le(unsigned int ts); // less equal: <=
+
+    char* gt(uint64_t ts); // great than: >
+    char* ge(uint64_t ts); // great or equal: >=
+    char* lt(uint64_t ts); // less than: <
+    char* le(uint64_t ts); // less or equal: <=
 
 private:
 

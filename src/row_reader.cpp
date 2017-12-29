@@ -57,4 +57,27 @@ int RowReader::read_col(unsigned int max_len) {
 
 }
 
+template <>
+bool RowReader::at(unsigned int index, std::string* value) {
+    if (index >= _col_num) {
+        return false;
+    }
+    char* start = _index[index];
+    char* end = nullptr;
+    if (index == _col_num - 1) {
+        end = _data + _len;
+    } else {
+        end = _index[index + 1] - 1;
+    }
+
+    // get rid of \0 which is end of string
+    if (_col_metas->at(index)._type == Type_STRING) {
+        end -= 1;
+    }
+    value->assign(start, end - start);
+    return true;
+}
+
+
+
 } // namespace RiverDB

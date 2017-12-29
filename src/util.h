@@ -37,6 +37,12 @@ private:
 
 namespace Util {
 
+const int BinarySearchLEFlag = -1;
+const int BinarySearchGEFlag = 1;
+const int BinarySearchEqualFlag = 0;
+const int BinarySearchLTFlag = -2;
+const int BinarySearchGTFlag = 2;
+
 void split(const std::string& src, const std::string& separator, std::vector<std::string>& dest);
 
 std::string& trim(std::string &s);
@@ -54,6 +60,10 @@ std::string decode_str(const std::string& file);
 bool is_gzfile(const std::string& fname);
 
 unsigned int get_file_size(const std::string& fname);
+
+int binary_search(const std::vector<uint64_t>& ts_vec, uint64_t ts, int flag); 
+    
+void sort_insert(std::vector<uint64_t>& ts_vec, uint64_t ts);
 
 template <class T> void get_value(char* data, T * val) {
     *val = *(static_cast<T *>(static_cast<void *>(data)));

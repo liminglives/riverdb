@@ -10,6 +10,7 @@ enum RETCODE {
 	RET_READERROR,
 	RET_EMPTY,
 	RET_READEND,
+	RET_NOTFOUND,
 };
 
 enum DataType {

@@ -69,7 +69,7 @@ bool DataContainer::get(const std::string& kvalue, uint64_t ts, RowReader* row_r
 bool DataContainer::at(const std::string& kvalue, int index, RowReader* row_reader) {
     DataIndex* di = get_data_index(kvalue);
     if (di == NULL) {
-        Log("has no kvalue:" + kvalue);
+        Log("has no kvalue:" + kvalue + " ksize:" + std::to_string(kvalue.size()));
         return false;
     }
 
@@ -131,7 +131,7 @@ bool DataContainer::load(const std::string& fpath) {
     reader.read_header();
     const std::vector<RowBinaryColMeta>& col_metas = reader.get_col_metas();
     if (!init_meta(col_metas)) {
-        Throw("illegal col_meta, path:" + fpath);
+        Throw("illegal col_meta, file path:" + fpath);
     }
 
     unsigned long long data_size  = reader.get_data_size();
@@ -155,7 +155,7 @@ bool DataContainer::load(const std::string& fpath) {
             Throw("row_reader failed, fpath:" + fpath);
         }
 
-        Log("kvalue:" + kvalue);
+        Log("kvalue:" + kvalue + " ksize:" + std::to_string(kvalue.size()));
         auto it = _data_index_map.find(kvalue);
         if (it == _data_index_map.end()) {
             Log("new dataindex for " + kvalue);

@@ -26,6 +26,14 @@ public:
     RowReader* new_row_reader();
     bool get(const std::string& kvalue, uint64_t ts, RowReader* row_reader);
     bool at(const std::string& kvalue, int index, RowReader* row_reader);
+    bool gt(const std::string& kvalue, uint64_t ts, RowReader* row_reader);
+    bool ge(const std::string& kvalue, uint64_t ts, RowReader* row_reader);
+    bool lt(const std::string& kvalue, uint64_t ts, RowReader* row_reader);
+    bool le(const std::string& kvalue, uint64_t ts, RowReader* row_reader);
+
+    unsigned int get_col_size() {
+        return _col_metas.size();
+    }
 
 private:
     bool compare(const std::vector<RowBinaryColMeta>& col_metas);
@@ -33,6 +41,7 @@ private:
     bool init_meta(const std::vector<RowBinaryColMeta>& col_metas);
     void build_index();
     void append(const std::string& kvalue, uint64_t ts, char* data); 
+    bool query(const std::string& kvalue, uint64_t ts, QueryOP op, RowReader* row_reader);
 
 private:
     std::vector<char *> _buf_vec;
@@ -41,7 +50,6 @@ private:
     std::vector<RowBinaryColMeta> _col_metas;
     std::string _primary_key;
     std::string _index_key;
-    RowReader* _row_reader;
 };
 
 } // namespace RiverDB

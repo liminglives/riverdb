@@ -13,25 +13,9 @@ namespace RiverDB {
 
 class RiverDBReader {
 public:
-    RiverDBReader(const std::string& binary_file, const std::string split = ",") : _split(split) {
-        _is_gzfile = Util::is_gzfile(binary_file);
-        if (_is_gzfile) {
-            _reader = new GZFileReader(binary_file);
-        } else {
-            _reader = new MMapFileReader(binary_file);
+    RiverDBReader(const std::string& binary_file, const std::string split = ","); 
 
-        }
-        if (_reader == NULL) {
-            Throw("new reader failed");
-        }
-    }
-
-    ~RiverDBReader() {
-        if (_reader) {
-            delete _reader;
-            _reader = NULL;
-        }
-    }
+    ~RiverDBReader(); 
 
     int init();
     void read_header(); 
@@ -46,15 +30,8 @@ public:
 
     int read_row(std::vector<std::string>& vals); 
 
-    void get_header_line(std::string& line) {
-        for (auto it = _col_metas.begin(); it != _col_metas.end(); ++it) {
-            //if (_filter_cols.empty() || _filter_cols.find(it->_col_name) != _filter_cols.end()) {
-                line.append(it->_col_name);
-                line.append(",");
-            //}
-        }
-        line.pop_back();
-    }
+    void get_header_line(std::string& line); 
+
     const std::vector<RowBinaryColMeta>& get_col_metas() {
         return _col_metas;
     }

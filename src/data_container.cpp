@@ -48,21 +48,7 @@ RowReader* DataContainer::new_row_reader() {
 }
 
 bool DataContainer::get(const std::string& kvalue, uint64_t ts, RowReader* row_reader) {
-    DataIndex* di = get_data_index(kvalue);
-    if (di == NULL) {
-        Log("has no kvalue:" + kvalue);
-        return false;
-    }
-
-    char* data = di->get(ts);
-    if (data == NULL) {
-        Log("kvalue " + kvalue + " has no " + std::to_string(ts));
-        return false;
-    }
-    
-    row_reader->init(data, std::numeric_limits<unsigned int>::max());
-
-    return true;
+    return query(kvalue, ts, QueryOP::EQ, row_reader);
 }
 
 bool DataContainer::at(const std::string& kvalue, int index, RowReader* row_reader) {
@@ -75,6 +61,61 @@ bool DataContainer::at(const std::string& kvalue, int index, RowReader* row_read
     char* data = di->at(index);
     if (data == NULL) {
         Log("out range " + kvalue + " " + std::to_string(index));
+        return false;
+    }
+    
+    row_reader->init(data, std::numeric_limits<unsigned int>::max());
+
+    return true;
+}
+
+bool DataContainer::gt(const std::string& kvalue, uint64_t ts, RowReader* row_reader) {
+    return query(kvalue, ts, QueryOP::GT, row_reader);
+}
+
+bool DataContainer::ge(const std::string& kvalue, uint64_t ts, RowReader* row_reader) {
+    return query(kvalue, ts, QueryOP::GE, row_reader);
+}
+
+bool DataContainer::lt(const std::string& kvalue, uint64_t ts, RowReader* row_reader) {
+    return query(kvalue, ts, QueryOP::LT, row_reader);
+}
+
+bool DataContainer::le(const std::string& kvalue, uint64_t ts, RowReader* row_reader) {
+    return query(kvalue, ts, QueryOP::LE, row_reader);
+}
+
+bool DataContainer::query(const std::string& kvalue, uint64_t ts, QueryOP op, RowReader* row_reader) {
+    DataIndex* di = get_data_index(kvalue);
+    if (di == NULL) {
+        Log("has no kvalue:" + kvalue);
+        return false;
+    }
+
+    char* data = NULL;
+    switch (op) {
+        case QueryOP::EQ:
+            data = di->get(ts);
+            break;
+        case QueryOP::GT:
+            data = di->gt(ts);
+            break;
+        case QueryOP::GE:
+            data = di->ge(ts);
+            break;
+        case QueryOP::LT:
+            data = di->lt(ts);
+            break;
+        case QueryOP::LE:
+            data = di->le(ts);
+            break;
+        default:
+            data = NULL;
+    }
+
+    if (data == NULL) {
+        Log("kvalue " + kvalue + " has no " + std::to_string(ts) + 
+                ", op:" + std::to_string(static_cast<int>(op)));
         return false;
     }
     
@@ -127,6 +168,24 @@ DataIndex* DataContainer::get_data_index(const std::string& kvalue) {
 }
 
 bool DataContainer::append(const std::vector<std::string>& row) {
+    char* data = NULL;
+    unsigned int len;
+    if (!Util::serialize_row(_col_metas, row, data, len)) {
+        Log("serialize_row failed");
+        return false;
+    }
+    _buf_vec.push_back(data);
+
+    uint64_t ts = 0;
+    Util::get_value<uint64_t>(const_cast<char*>(row[_col_name_index_map[_index_key]].c_str()), &ts);
+    append(row[_col_name_index_map[_primary_key]], ts, data);
+
+    return true;
+
+}
+
+/*
+bool DataContainer::append(const std::vector<std::string>& row) {
     unsigned int row_size = row.size();
     if (row_size != _col_metas.size()) {
         Log("row size is wrong, row_size:" + std::to_string(row_size) + 
@@ -170,6 +229,7 @@ bool DataContainer::append(const std::vector<std::string>& row) {
 
     return true;
 }
+*/
 
 void DataContainer::append(const std::string& kvalue, uint64_t ts, char* data) {
     auto di = get_data_index(kvalue);

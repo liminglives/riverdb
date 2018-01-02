@@ -35,6 +35,14 @@ enum DataType {
 	Type_END // must be the last one
 };
 
+enum class QueryOP : int {
+    EQ = 1,
+    GT,
+    GE,
+    LT,
+    LE,
+};
+
 class RowBinaryColMeta {
 public:
     std::string _col_name;

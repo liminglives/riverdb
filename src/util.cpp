@@ -2,6 +2,7 @@
 
 #include <chrono>
 #include <sys/stat.h>
+#include <string.h>
 
 #include "defines.h"
 
@@ -225,6 +226,47 @@ template <> void get_str_from_val(const std::string& val, std::string& str) {
 }
 template <> void get_str_from_val(const EmptyValue& val, std::string& str) {
     str.clear();
+}
+
+bool serialize_row(const std::vector<RowBinaryColMeta>& col_metas, 
+        const std::vector<std::string>& row,
+        char*& data, unsigned int& len) {
+    unsigned int row_size = row.size();
+    if (row_size != col_metas.size()) {
+        Log("row size is wrong, row_size:" + std::to_string(row_size) + 
+                " col_metas size:" + std::to_string(col_metas.size()));
+        return false;
+    }
+
+    len = 0;
+    for (unsigned int i = 0; i < row_size; ++i) {
+        len += row[i].size();
+        if (col_metas[i]._type >= Type_INT16 && col_metas[i]._type <= Type_LD) {
+            ++len;
+        } else if (col_metas[i]._type == Type_STRING) {
+            len += 2;
+        }
+    }
+    data = (char*)malloc(len);
+    memset(data, 0, len);
+
+    unsigned int cur = 0;
+    for (unsigned int i = 0; i < row_size; ++i) {
+        char mark = '\0';
+        if (col_metas[i]._type >= Type_INT16 && col_metas[i]._type <= Type_LD) {
+            mark = '0' + row[i].size();
+        }
+        *(data + cur) = mark;
+        ++cur;
+        memcpy(data + cur, row[i].data(), row[i].size());
+        cur += row[i].size();
+        if (col_metas[i]._type == Type_STRING) {
+            *(data + cur) = '\0';
+            ++cur;
+        }
+    }
+
+    return true;
 }
 
 } // namespace Util

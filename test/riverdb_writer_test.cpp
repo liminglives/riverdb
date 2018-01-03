@@ -275,8 +275,10 @@ TEST_F(RiverDBWriterTest, TestRiverDBWithIntTypeKey) {
 
 
     RiverDB::TimeRiverDB* db = new RiverDB::TimeRiverDB("K", "TS");
-    db->init();
-    db->load(file);
+    std::vector<std::string> file_vec;
+    file_vec.push_back(file);
+    db->init(file_vec);
+    //db->load(file);
 
     RiverDB::RowReader* row_reader = db->new_row_reader();
     std::string kvalue; 
@@ -360,8 +362,8 @@ TEST_F(RiverDBWriterTest, TestRiverDBWithIntTypeKey) {
 TEST_F(RiverDBWriterTest, TestRiverDBWithStringTypeKey) {
     try {
     RiverDB::TimeRiverDB* db = new RiverDB::TimeRiverDB("K", "TS");
-    db->init();
-    db->load("./testdata/riverdb_test.rdb");
+    db->init({"./testdata/riverdb_test.rdb"});
+    //db->load("./testdata/riverdb_test.rdb");
     RiverDB::RowReader* row_reader = db->new_row_reader();
     std::string kvalue = "11210";
     //RiverDB::Util::get_str_from_val(11210, kvalue);
@@ -396,8 +398,8 @@ TEST_F(RiverDBWriterTest, TestRiverDBWriteAndIndex) {
     try {
     std::string file = "./testdata/riverdb_test2.rdb";
     RiverDB::TimeRiverDB* db = new RiverDB::TimeRiverDB("K", "TS");
-    db->init();
-    db->load(file);
+    db->init({file});
+    //db->load(file);
 
     RiverDB::RowReader* row_reader = db->new_row_reader();
 

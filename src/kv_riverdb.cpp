@@ -12,13 +12,40 @@ KVRiverDB::~KVRiverDB() {
     close();
 }
 
-bool KVRiverDB::init(const std::string& fpath) {
+bool KVRiverDB::init(const std::string& fpath, 
+        const std::vector<RowBinaryColMeta>& col_metas) {
+    if (col_metas.size() > 0) {
+        if (!init_meta(col_metas)) {
+            Log("init col meta failed");
+            return false;
+        }
+    }
+
     _fpath = fpath;
     if (!load(_fpath)) {
         Log("load failed, file path:" + fpath);
         return false;
     }
-    _writer = new RiverDBWriter(fpath, FileOpenModeAppend);
+
+    if (!_fpath.empty()) {
+        if (Util::file_exists(_fpath)) {
+            _writer = new RiverDBWriter(_fpath, FileOpenModeAppend);
+            auto _fpath_col_meta = _writer->get_col_metas();
+            if (!init_meta(_fpath_col_meta)) {
+                Log("append file col meta not matched");
+                return false;
+            }
+        } else if (_col_metas.size() > 0){
+            _writer = new RiverDBWriter(_fpath, FileOpenModeWrite);
+            _writer->set_col_metas(_col_metas);
+            _writer->write_header();
+        } else {
+            Log("init _fpath failed : " + _fpath);
+            return false;
+        }
+    }
+
+    return true;
 }
 
 void KVRiverDB::close() {
@@ -102,8 +129,10 @@ bool KVRiverDB::set(const std::vector<std::string>& row) {
 
     _index_map[row[_col_name_index_map[_primary_key]]] = data; 
 
-    _writer->write_row(row);
-    _writer->flush();
+    if (_writer) {
+        _writer->write_row(row);
+        _writer->flush();
+    }
 
     return true;
 }

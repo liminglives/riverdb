@@ -83,6 +83,12 @@ public:
         _col_metas.push_back(col_meta);
     }
 
+    void set_col_metas(const std::vector<RowBinaryColMeta>& col_metas) {
+        for (const auto& meta : col_metas) {
+            push_col_meta(meta);
+        }
+    }
+
     void push_col_meta(const std::string& col_name, int datatype) {
         RowBinaryColMeta col_meta;
         col_meta._col_name = col_name;
@@ -93,6 +99,11 @@ public:
     int get_col_size() {
         return _col_metas.size();
     }
+
+    const std::vector<RowBinaryColMeta>& get_col_metas() {
+        return _col_metas;
+    }
+    
 
     void convert(const std::string& csv_file, const std::string& dict_file, const std::string split = ","); 
 

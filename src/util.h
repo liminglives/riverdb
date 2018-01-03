@@ -59,6 +59,8 @@ std::string decode_str(const std::string& file);
 
 bool is_gzfile(const std::string& fname);
 
+bool file_exists(const std::string& path);
+
 unsigned int get_file_size(const std::string& fname);
 
 int binary_search(const std::vector<uint64_t>& ts_vec, uint64_t ts, int flag); 

@@ -17,7 +17,8 @@ public:
     KVRiverDB(const std::string& primary_key);
     ~KVRiverDB();
 
-    bool init(const std::string& fpath);
+    bool init(const std::string& fpath, 
+            const std::vector<RowBinaryColMeta>& col_metas = {});
 
     RowReader* new_row_reader(); 
 

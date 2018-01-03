@@ -3,6 +3,7 @@
 #include <chrono>
 #include <sys/stat.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "defines.h"
 
@@ -161,6 +162,10 @@ bool is_gzfile(const std::string& fname) {
     } else {
         return false;
     }
+}
+
+bool file_exists(const std::string& path) {
+    return access(path.c_str(), F_OK) == 0;
 }
 
 unsigned int get_file_size(const std::string& fname) {

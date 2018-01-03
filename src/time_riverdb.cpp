@@ -17,7 +17,40 @@ TimeRiverDB::~TimeRiverDB() {
     close();
 }
 
-bool TimeRiverDB::init() {
+bool TimeRiverDB::init(const std::vector<std::string>& load_fpath_vec,
+            const std::string& append_file, 
+            const std::vector<RowBinaryColMeta>& col_metas) {
+    if (col_metas.size() > 0) {
+        if (!init_meta(col_metas)) {
+            Log("init col meta failed");
+            return false;
+        }
+    }
+
+    for (const auto& fpath : load_fpath_vec) {
+        if (!load(fpath)) {
+            Throw("load " + fpath + " failed");
+        }
+    }
+
+    if (!append_file.empty()) {
+        if (Util::file_exists(append_file)) {
+            _append_writer = new RiverDBWriter(append_file, FileOpenModeAppend);
+            auto append_file_col_meta = _append_writer->get_col_metas();
+            if (!init_meta(append_file_col_meta)) {
+                Log("append file col meta not matched");
+                return false;
+            }
+        } else if (_col_metas.size() > 0){
+            _append_writer = new RiverDBWriter(append_file, FileOpenModeWrite);
+            _append_writer->set_col_metas(_col_metas);
+            _append_writer->write_header();
+        } else {
+            Log("init append_file failed : " + append_file);
+            return false;
+        }
+    }
+
     return true;
 }
 
@@ -40,6 +73,11 @@ void TimeRiverDB::close() {
 
     for (auto buf : _buf_vec) {
         free(buf);
+    }
+
+    if (_append_writer) {
+        delete _append_writer;
+        _append_writer = NULL;
     }
 }
 
@@ -179,6 +217,11 @@ bool TimeRiverDB::append(const std::vector<std::string>& row) {
     uint64_t ts = 0;
     Util::get_value<uint64_t>(const_cast<char*>(row[_col_name_index_map[_index_key]].c_str()), &ts);
     append(row[_col_name_index_map[_primary_key]], ts, data);
+
+    if (_append_writer) {
+        _append_writer->write_row(row);
+        _append_writer->flush();
+    }
 
     return true;
 

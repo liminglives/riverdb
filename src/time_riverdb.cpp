@@ -1,4 +1,4 @@
-#include "data_container.h"
+#include "time_riverdb.h"
 
 #include <limits>
 #include <string.h>
@@ -9,15 +9,15 @@
 
 namespace RiverDB {
 
-DataContainer::DataContainer(const std::string& primary_key,
+TimeRiverDB::TimeRiverDB(const std::string& primary_key,
             const std::string& index_key) : 
     _primary_key(primary_key), _index_key(index_key) {}
 
-DataContainer::~DataContainer() {
+TimeRiverDB::~TimeRiverDB() {
     close();
 }
 
-bool DataContainer::init() {
+bool TimeRiverDB::init() {
     return true;
 }
 
@@ -33,7 +33,7 @@ bool DataContainer::init() {
 //    return true;
 //}
 
-void DataContainer::close() {
+void TimeRiverDB::close() {
     for (auto it : _data_index_map) {
         delete it.second;
     }
@@ -43,15 +43,15 @@ void DataContainer::close() {
     }
 }
 
-RowReader* DataContainer::new_row_reader() {
+RowReader* TimeRiverDB::new_row_reader() {
     return new RowReader(&_col_metas, &_col_name_index_map);
 }
 
-bool DataContainer::get(const std::string& kvalue, uint64_t ts, RowReader* row_reader) {
+bool TimeRiverDB::get(const std::string& kvalue, uint64_t ts, RowReader* row_reader) {
     return query(kvalue, ts, QueryOP::EQ, row_reader);
 }
 
-bool DataContainer::at(const std::string& kvalue, int index, RowReader* row_reader) {
+bool TimeRiverDB::at(const std::string& kvalue, int index, RowReader* row_reader) {
     DataIndex* di = get_data_index(kvalue);
     if (di == NULL) {
         Log("has no kvalue:" + kvalue + " ksize:" + std::to_string(kvalue.size()));
@@ -69,23 +69,23 @@ bool DataContainer::at(const std::string& kvalue, int index, RowReader* row_read
     return true;
 }
 
-bool DataContainer::gt(const std::string& kvalue, uint64_t ts, RowReader* row_reader) {
+bool TimeRiverDB::gt(const std::string& kvalue, uint64_t ts, RowReader* row_reader) {
     return query(kvalue, ts, QueryOP::GT, row_reader);
 }
 
-bool DataContainer::ge(const std::string& kvalue, uint64_t ts, RowReader* row_reader) {
+bool TimeRiverDB::ge(const std::string& kvalue, uint64_t ts, RowReader* row_reader) {
     return query(kvalue, ts, QueryOP::GE, row_reader);
 }
 
-bool DataContainer::lt(const std::string& kvalue, uint64_t ts, RowReader* row_reader) {
+bool TimeRiverDB::lt(const std::string& kvalue, uint64_t ts, RowReader* row_reader) {
     return query(kvalue, ts, QueryOP::LT, row_reader);
 }
 
-bool DataContainer::le(const std::string& kvalue, uint64_t ts, RowReader* row_reader) {
+bool TimeRiverDB::le(const std::string& kvalue, uint64_t ts, RowReader* row_reader) {
     return query(kvalue, ts, QueryOP::LE, row_reader);
 }
 
-bool DataContainer::query(const std::string& kvalue, uint64_t ts, QueryOP op, RowReader* row_reader) {
+bool TimeRiverDB::query(const std::string& kvalue, uint64_t ts, QueryOP op, RowReader* row_reader) {
     DataIndex* di = get_data_index(kvalue);
     if (di == NULL) {
         Log("has no kvalue:" + kvalue);
@@ -124,7 +124,7 @@ bool DataContainer::query(const std::string& kvalue, uint64_t ts, QueryOP op, Ro
     return true;
 }
 
-bool DataContainer::compare(const std::vector<RowBinaryColMeta>& col_metas) {
+bool TimeRiverDB::compare(const std::vector<RowBinaryColMeta>& col_metas) {
     if (_col_metas.size() == 0) {
         for (auto& col_meta : col_metas) {
             _col_metas.push_back(col_meta);
@@ -148,7 +148,7 @@ bool DataContainer::compare(const std::vector<RowBinaryColMeta>& col_metas) {
     return true;
 }
 
-bool DataContainer::init_meta(const std::vector<RowBinaryColMeta>& col_metas) {
+bool TimeRiverDB::init_meta(const std::vector<RowBinaryColMeta>& col_metas) {
     if (_col_metas.size() == 0) {
         _col_metas = col_metas;
         for (int i = 0; i < _col_metas.size(); ++i) {
@@ -162,12 +162,12 @@ bool DataContainer::init_meta(const std::vector<RowBinaryColMeta>& col_metas) {
     return true;
 }
 
-DataIndex* DataContainer::get_data_index(const std::string& kvalue) {
+DataIndex* TimeRiverDB::get_data_index(const std::string& kvalue) {
     auto it = _data_index_map.find(kvalue);
     return it == _data_index_map.end() ? NULL : it->second;
 }
 
-bool DataContainer::append(const std::vector<std::string>& row) {
+bool TimeRiverDB::append(const std::vector<std::string>& row) {
     char* data = NULL;
     unsigned int len;
     if (!Util::serialize_row(_col_metas, row, data, len)) {
@@ -184,54 +184,7 @@ bool DataContainer::append(const std::vector<std::string>& row) {
 
 }
 
-/*
-bool DataContainer::append(const std::vector<std::string>& row) {
-    unsigned int row_size = row.size();
-    if (row_size != _col_metas.size()) {
-        Log("row size is wrong, row_size:" + std::to_string(row_size) + 
-                " col_metas size:" + std::to_string(_col_metas.size()));
-        return false;
-    }
-
-    unsigned int len = 0;
-    for (unsigned int i = 0; i < row_size; ++i) {
-        len += row[i].size();
-        if (_col_metas[i]._type >= Type_INT16 && _col_metas[i]._type <= Type_LD) {
-            ++len;
-        } else if (_col_metas[i]._type == Type_STRING) {
-            len += 2;
-        }
-    }
-    //len += row_size * 2;
-    char* data = (char*)malloc(len);
-    memset(data, 0, len);
-    _buf_vec.push_back(data);
-
-    unsigned int cur = 0;
-    for (unsigned int i = 0; i < row_size; ++i) {
-        char mark = '\0';
-        if (_col_metas[i]._type >= Type_INT16 && _col_metas[i]._type <= Type_LD) {
-            mark = '0' + row[i].size();
-        }
-        *(data + cur) = mark;
-        ++cur;
-        memcpy(data + cur, row[i].data(), row[i].size());
-        cur += row[i].size();
-        if (_col_metas[i]._type == Type_STRING) {
-            *(data + cur) = '\0';
-            ++cur;
-        }
-    }
-
-    uint64_t ts = 0;
-    Util::get_value<uint64_t>(const_cast<char*>(row[_col_name_index_map[_index_key]].c_str()), &ts);
-    append(row[_col_name_index_map[_primary_key]], ts, data);
-
-    return true;
-}
-*/
-
-void DataContainer::append(const std::string& kvalue, uint64_t ts, char* data) {
+void TimeRiverDB::append(const std::string& kvalue, uint64_t ts, char* data) {
     auto di = get_data_index(kvalue);
     if (di == NULL) {
         Log("new DataIndex for " + kvalue);
@@ -241,7 +194,7 @@ void DataContainer::append(const std::string& kvalue, uint64_t ts, char* data) {
     di->append(ts, data);
 }
 
-bool DataContainer::load(const std::string& fpath) {
+bool TimeRiverDB::load(const std::string& fpath) {
     RiverDBReader reader(fpath);
     reader.read_header();
     const std::vector<RowBinaryColMeta>& col_metas = reader.get_col_metas();

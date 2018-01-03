@@ -11,11 +11,11 @@
 
 namespace RiverDB {
 
-class DataContainer {
+class TimeRiverDB {
 public:
-    DataContainer(const std::string& primary_key,
+    TimeRiverDB(const std::string& primary_key,
             const std::string& index_key);
-    ~DataContainer();
+    ~TimeRiverDB();
 
     bool init();
     bool load(const std::string& fpath);

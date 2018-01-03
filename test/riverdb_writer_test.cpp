@@ -1,7 +1,4 @@
-#include "riverdb_writer.h"
-#include "riverdb_reader.h"
 #include "riverdb.h"
-#include "kv_riverdb.h"
 
 #include "gtest/gtest.h"
 
@@ -277,7 +274,7 @@ TEST_F(RiverDBWriterTest, TestRiverDBWithIntTypeKey) {
     delete _writer;
 
 
-    RiverDB::DataContainer* db = new RiverDB::DataContainer("K", "TS");
+    RiverDB::TimeRiverDB* db = new RiverDB::TimeRiverDB("K", "TS");
     db->init();
     db->load(file);
 
@@ -362,9 +359,8 @@ TEST_F(RiverDBWriterTest, TestRiverDBWithIntTypeKey) {
 
 TEST_F(RiverDBWriterTest, TestRiverDBWithStringTypeKey) {
     try {
-    std::cout << "llllll"<< std::endl;
-    RiverDB::RiverDB* db = new RiverDB::RiverDB();
-    db->init("K", "TS");
+    RiverDB::TimeRiverDB* db = new RiverDB::TimeRiverDB("K", "TS");
+    db->init();
     db->load("./testdata/riverdb_test.rdb");
     RiverDB::RowReader* row_reader = db->new_row_reader();
     std::string kvalue = "11210";
@@ -399,7 +395,7 @@ TEST_F(RiverDBWriterTest, TestRiverDBWithStringTypeKey) {
 TEST_F(RiverDBWriterTest, TestRiverDBWriteAndIndex) {
     try {
     std::string file = "./testdata/riverdb_test2.rdb";
-    RiverDB::DataContainer* db = new RiverDB::DataContainer("K", "TS");
+    RiverDB::TimeRiverDB* db = new RiverDB::TimeRiverDB("K", "TS");
     db->init();
     db->load(file);
 

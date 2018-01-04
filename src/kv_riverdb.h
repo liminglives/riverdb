@@ -18,7 +18,7 @@ public:
     ~KVRiverDB();
 
     bool init(const std::string& fpath, 
-            const std::vector<RowBinaryColMeta>& col_metas = {});
+            const std::vector<ColMeta>& col_metas = {});
 
     RowReader* new_row_reader(); 
 
@@ -28,13 +28,13 @@ public:
 private:
     bool load(const std::string& fpath);
     void close();
-    bool init_meta(const std::vector<RowBinaryColMeta>& col_metas); 
+    bool init_meta(const std::vector<ColMeta>& col_metas); 
 
 private:
     std::vector<char *> _buf_vec;
     std::unordered_map<std::string, char*> _index_map;
     std::unordered_map<std::string, int> _col_name_index_map;
-    std::vector<RowBinaryColMeta> _col_metas;
+    std::vector<ColMeta> _col_metas;
     std::string _primary_key;
     std::string _fpath;
     RiverDBWriter* _writer = NULL;

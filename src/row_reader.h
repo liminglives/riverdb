@@ -10,7 +10,7 @@ namespace RiverDB {
 
 class RowReader {
 public:
-    RowReader(std::vector<RowBinaryColMeta>* col_metas, 
+    RowReader(std::vector<ColMeta>* col_metas, 
             std::unordered_map<std::string, int>* col_index_map);
     ~RowReader();
 
@@ -44,7 +44,7 @@ private:
 
 private:
     char* _data;
-    std::vector<RowBinaryColMeta>* _col_metas;
+    std::vector<ColMeta>* _col_metas;
     std::unordered_map<std::string, int>* _col_index_map;    
     unsigned int _col_num;
     std::vector<char *> _index;

@@ -13,7 +13,7 @@ KVRiverDB::~KVRiverDB() {
 }
 
 bool KVRiverDB::init(const std::string& fpath, 
-        const std::vector<RowBinaryColMeta>& col_metas) {
+        const std::vector<ColMeta>& col_metas) {
     if (col_metas.size() > 0) {
         if (!init_meta(col_metas)) {
             Log("init col meta failed");
@@ -58,7 +58,7 @@ void KVRiverDB::close() {
     }
 }
 
-bool KVRiverDB::init_meta(const std::vector<RowBinaryColMeta>& col_metas) {
+bool KVRiverDB::init_meta(const std::vector<ColMeta>& col_metas) {
     if (col_metas.size() ==0) {
         return false;
     }
@@ -72,7 +72,7 @@ bool KVRiverDB::init_meta(const std::vector<RowBinaryColMeta>& col_metas) {
 bool KVRiverDB::load(const std::string& fpath) {
     RiverDBReader reader(fpath);
     reader.read_header();
-    const std::vector<RowBinaryColMeta>& col_metas = reader.get_col_metas();
+    const std::vector<ColMeta>& col_metas = reader.get_col_metas();
     if (!init_meta(col_metas)) {
         Throw("illegal col_meta, file path:" + fpath);
     }
@@ -130,7 +130,7 @@ bool KVRiverDB::set(const std::vector<std::string>& row) {
     _index_map[row[_col_name_index_map[_primary_key]]] = data; 
 
     if (_writer) {
-        _writer->write_row(row);
+        _writer->write_row(data, len);
         _writer->flush();
     }
 

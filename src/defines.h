@@ -18,6 +18,17 @@ enum RETCODE {
 	RET_NOTFOUND,
 };
 
+using INT16 = int16_t;
+using INT32 = int32_t;
+using INT64 = int64_t;
+using UINT16 = uint16_t;
+using UINT32 = uint32_t;
+using UINT64 = uint64_t;
+using FLOAT = float;
+using DOUBLE = double;
+using LONGDOUBLE = long double;
+using STRING = std::string;
+
 enum DataType {
     Type_START = 0, // must be the first one
 
@@ -43,7 +54,7 @@ enum class QueryOP : int {
     LE,
 };
 
-class RowBinaryColMeta {
+class ColMeta {
 public:
     std::string _col_name;
     int _type;

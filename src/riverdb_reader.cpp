@@ -67,7 +67,7 @@ void RiverDBReader::read_header() {
         Throw("empty header, line:" + line);
     }
     _col_size = arr.size();
-    RowBinaryColMeta col_meta;
+    ColMeta col_meta;
     _col_metas.reserve(arr.size());
     for (unsigned int i = 0; i < arr.size(); ++i) {
          if (_filter_cols.empty() || _filter_cols.find(arr[i]) != _filter_cols.end()) {

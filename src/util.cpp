@@ -233,7 +233,7 @@ template <> void get_str_from_val(const EmptyValue& val, std::string& str) {
     str.clear();
 }
 
-bool serialize_row(const std::vector<RowBinaryColMeta>& col_metas, 
+bool serialize_row(const std::vector<ColMeta>& col_metas, 
         const std::vector<std::string>& row,
         char*& data, unsigned int& len) {
     unsigned int row_size = row.size();
@@ -269,6 +269,11 @@ bool serialize_row(const std::vector<RowBinaryColMeta>& col_metas,
             *(data + cur) = '\0';
             ++cur;
         }
+    }
+    if (cur != len) {
+        Log("serialize to row failed, actual len:" + std::to_string(cur) +
+                ", expected len:" + std::to_string(len));
+        return false;
     }
 
     return true;

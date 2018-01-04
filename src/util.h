@@ -83,7 +83,7 @@ template <class T> int push_row(const T& val, std::vector<std::string>& row) {
     return RET_OK;
 }
 
-bool serialize_row(const std::vector<RowBinaryColMeta>& col_metas, 
+bool serialize_row(const std::vector<ColMeta>& col_metas, 
         const std::vector<std::string>& row,
         char*& data, unsigned int& len); 
 

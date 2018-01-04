@@ -32,7 +32,7 @@ public:
 
     void get_header_line(std::string& line); 
 
-    const std::vector<RowBinaryColMeta>& get_col_metas() {
+    const std::vector<ColMeta>& get_col_metas() {
         return _col_metas;
     }
 
@@ -70,7 +70,7 @@ public:
     } 
     
 private:
-    std::vector<RowBinaryColMeta> _col_metas;
+    std::vector<ColMeta> _col_metas;
     IFileReader *_reader;
     std::string _split;
     std::unordered_set<std::string> _filter_cols;

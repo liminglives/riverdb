@@ -19,7 +19,7 @@ TimeRiverDB::~TimeRiverDB() {
 
 bool TimeRiverDB::init(const std::vector<std::string>& load_fpath_vec,
             const std::string& append_file, 
-            const std::vector<RowBinaryColMeta>& col_metas) {
+            const std::vector<ColMeta>& col_metas) {
     if (col_metas.size() > 0) {
         if (!init_meta(col_metas)) {
             Log("init col meta failed");
@@ -162,7 +162,7 @@ bool TimeRiverDB::query(const std::string& kvalue, uint64_t ts, QueryOP op, RowR
     return true;
 }
 
-bool TimeRiverDB::compare(const std::vector<RowBinaryColMeta>& col_metas) {
+bool TimeRiverDB::compare(const std::vector<ColMeta>& col_metas) {
     if (_col_metas.size() == 0) {
         for (auto& col_meta : col_metas) {
             _col_metas.push_back(col_meta);
@@ -174,8 +174,8 @@ bool TimeRiverDB::compare(const std::vector<RowBinaryColMeta>& col_metas) {
         }
 
         for (unsigned int i = 0; i < col_metas.size(); ++i) {
-            const RowBinaryColMeta meta1 = col_metas[i];
-            const RowBinaryColMeta meta2 = _col_metas[i];
+            const ColMeta meta1 = col_metas[i];
+            const ColMeta meta2 = _col_metas[i];
             if (meta1._col_name != meta2._col_name || meta1._type != meta2._type) {
                 Log("meta not equal");
                 return false;
@@ -186,7 +186,7 @@ bool TimeRiverDB::compare(const std::vector<RowBinaryColMeta>& col_metas) {
     return true;
 }
 
-bool TimeRiverDB::init_meta(const std::vector<RowBinaryColMeta>& col_metas) {
+bool TimeRiverDB::init_meta(const std::vector<ColMeta>& col_metas) {
     if (_col_metas.size() == 0) {
         _col_metas = col_metas;
         for (int i = 0; i < _col_metas.size(); ++i) {
@@ -219,7 +219,8 @@ bool TimeRiverDB::append(const std::vector<std::string>& row) {
     append(row[_col_name_index_map[_primary_key]], ts, data);
 
     if (_append_writer) {
-        _append_writer->write_row(row);
+        //_append_writer->write_row(row);
+        _append_writer->write_row(data, len);
         _append_writer->flush();
     }
 
@@ -230,7 +231,7 @@ bool TimeRiverDB::append(const std::vector<std::string>& row) {
 void TimeRiverDB::append(const std::string& kvalue, uint64_t ts, char* data) {
     auto di = get_data_index(kvalue);
     if (di == NULL) {
-        Log("new DataIndex for " + kvalue);
+        //Log("new DataIndex for " + kvalue);
         di = new DataIndex(kvalue, _index_key);
         _data_index_map[kvalue] = di;
     }
@@ -240,7 +241,7 @@ void TimeRiverDB::append(const std::string& kvalue, uint64_t ts, char* data) {
 bool TimeRiverDB::load(const std::string& fpath) {
     RiverDBReader reader(fpath);
     reader.read_header();
-    const std::vector<RowBinaryColMeta>& col_metas = reader.get_col_metas();
+    const std::vector<ColMeta>& col_metas = reader.get_col_metas();
     if (!init_meta(col_metas)) {
         Throw("illegal col_meta, file path:" + fpath);
     }

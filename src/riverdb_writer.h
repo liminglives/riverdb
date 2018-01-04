@@ -68,6 +68,8 @@ public:
         return write_binary_line(_writer, row);
     }
 
+    int write_row(const char* data, unsigned int data_len);
+
     template <class T> int push_row(const T& val, std::vector<std::string>& row) {
         Util::push_row(val, row);
         //std::string str;
@@ -76,21 +78,21 @@ public:
         //return RET_OK;
     }
 
-    void push_col_meta(const RowBinaryColMeta& col_meta) {
+    void push_col_meta(const ColMeta& col_meta) {
         if (col_meta._type <= Type_START || col_meta._type >= Type_END) {
             Throw("push error, unknown data type " + std::to_string(col_meta._type));
         }
         _col_metas.push_back(col_meta);
     }
 
-    void set_col_metas(const std::vector<RowBinaryColMeta>& col_metas) {
+    void set_col_metas(const std::vector<ColMeta>& col_metas) {
         for (const auto& meta : col_metas) {
             push_col_meta(meta);
         }
     }
 
     void push_col_meta(const std::string& col_name, int datatype) {
-        RowBinaryColMeta col_meta;
+        ColMeta col_meta;
         col_meta._col_name = col_name;
         col_meta._type = datatype;
         push_col_meta(col_meta);
@@ -100,7 +102,7 @@ public:
         return _col_metas.size();
     }
 
-    const std::vector<RowBinaryColMeta>& get_col_metas() {
+    const std::vector<ColMeta>& get_col_metas() {
         return _col_metas;
     }
     
@@ -119,7 +121,7 @@ private:
     IFileWriter* _writer;
     std::string _split;
 	std::unordered_map<std::string, DataType> _col_datatype_map;
-    std::vector<RowBinaryColMeta> _col_metas;
+    std::vector<ColMeta> _col_metas;
     bool _is_gzfile = false;
     int _file_write_mode;
 };

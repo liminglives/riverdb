@@ -5,14 +5,13 @@ SET(SRC src/gz_file_reader.cpp
     src/mmap_file_reader.cpp
     src/riverdb_reader.cpp
     src/riverdb_writer.cpp
-    src/data_container.cpp
+    src/time_riverdb.cpp
     src/data_index.cpp
     src/row_reader.cpp
-    src/riverdb.cpp
     src/kv_riverdb.cpp
     src/util.cpp)
 
-SET(CMAKE_CXX_FLAGS "-std=c++11 -g -ftest-coverage -fprofile-arcs -Wno-deprecated")
+SET(CMAKE_CXX_FLAGS "-std=c++11 -g")
 
 ADD_LIBRARY(riverdb STATIC ${SRC})
 SET_TARGET_PROPERTIES(riverdb PROPERTIES OUTPUT_NAME "riverdb")

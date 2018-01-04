@@ -2,7 +2,7 @@
 
 namespace RiverDB {
 
-RowReader::RowReader(std::vector<RowBinaryColMeta>* col_metas, 
+RowReader::RowReader(std::vector<ColMeta>* col_metas, 
         std::unordered_map<std::string, int>* col_index_map) :
     _data(NULL), 
     _col_metas(col_metas),

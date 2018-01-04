@@ -20,7 +20,7 @@ public:
 
     bool init(const std::vector<std::string>& load_fpath_vec,
             const std::string& append_file = "", 
-            const std::vector<RowBinaryColMeta>& col_metas = {});
+            const std::vector<ColMeta>& col_metas = {});
     bool load(const std::string& fpath);
     bool append(const std::vector<std::string>& row); 
 
@@ -39,8 +39,8 @@ public:
     }
 
 private:
-    bool init_meta(const std::vector<RowBinaryColMeta>& col_metas);
-    bool compare(const std::vector<RowBinaryColMeta>& col_metas);
+    bool init_meta(const std::vector<ColMeta>& col_metas);
+    bool compare(const std::vector<ColMeta>& col_metas);
     void close();
     void build_index();
     void append(const std::string& kvalue, uint64_t ts, char* data); 
@@ -50,7 +50,7 @@ private:
     std::vector<char *> _buf_vec;
     std::unordered_map<std::string, DataIndex*> _data_index_map;
     std::unordered_map<std::string, int> _col_name_index_map;
-    std::vector<RowBinaryColMeta> _col_metas;
+    std::vector<ColMeta> _col_metas;
     std::string _primary_key;
     std::string _index_key;
     RiverDBWriter* _append_writer = NULL;

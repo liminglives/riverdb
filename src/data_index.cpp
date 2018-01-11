@@ -13,9 +13,12 @@ DataIndex::~DataIndex() {
 }
 
 void DataIndex::append(uint64_t ts, char* data) {
-    _ts_data_map[ts] = data; //  todo : if we need check repeated timestamp
+    auto it = _ts_data_map.find(ts);
+    _ts_data_map[ts] = data; 
+    if (it != _ts_data_map.end()) {
+        return;
+    }
 
-    //_ts_index.push_back(ts); // todo : sort insert
     Util::sort_insert(_ts_index, ts);
 }
 
@@ -35,6 +38,33 @@ char* DataIndex::at(int index) {
         index = len - 1;
     }
     return _ts_data_map[_ts_index[index]];
+}
+
+int DataIndex::get_index_by_ts(uint64_t ts, QueryOP op) {
+    int pos = -1;
+    switch (op) {
+        case QueryOP::EQ:
+            pos = Util::binary_search(_ts_index, ts, Util::BinarySearchEqualFlag);
+            break;
+        case QueryOP::GT:
+            pos = Util::binary_search(_ts_index, ts, Util::BinarySearchGTFlag);
+            break;
+        case QueryOP::GE:
+            pos = Util::binary_search(_ts_index, ts, Util::BinarySearchGEFlag);
+            break;
+        case QueryOP::LT:
+            pos = Util::binary_search(_ts_index, ts, Util::BinarySearchLTFlag);
+            break;
+        case QueryOP::LE:
+            pos = Util::binary_search(_ts_index, ts, Util::BinarySearchLEFlag);
+            break;
+        default:
+            pos = -1;
+    }
+    if (pos >= _ts_index.size()) {
+        pos = -1;
+    }
+    return pos;
 }
 
 char* DataIndex::gt(uint64_t ts) {

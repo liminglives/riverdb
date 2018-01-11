@@ -24,8 +24,8 @@ RiverDBReader::~RiverDBReader() {
 
 void RiverDBReader::get_header_line(std::string& line) {
     for (auto it = _col_metas.begin(); it != _col_metas.end(); ++it) {
-        //if (_filter_cols.empty() || _filter_cols.find(it->_col_name) != _filter_cols.end()) {
-            line.append(it->_col_name);
+        //if (_filter_cols.empty() || _filter_cols.find(it->name) != _filter_cols.end()) {
+            line.append(it->name);
             line.append(",");
         //}
     }
@@ -71,7 +71,7 @@ void RiverDBReader::read_header() {
     _col_metas.reserve(arr.size());
     for (unsigned int i = 0; i < arr.size(); ++i) {
          if (_filter_cols.empty() || _filter_cols.find(arr[i]) != _filter_cols.end()) {
-            col_meta._col_name = arr[i];
+            col_meta.name = arr[i];
             _col_metas.push_back(col_meta);
 
             _filter_col_ids.insert(i);
@@ -93,10 +93,10 @@ void RiverDBReader::read_header() {
         }
         if (_filter_col_ids.find(i) != _filter_col_ids.end()) {
             int type = std::stoi(arr[i]);
-            if (type <= Type_START || type >= Type_END) {
+            if (type <= DT_START || type >= DT_END) {
                 Throw("illegal data type " + arr[i]);
             }
-            _col_metas[j++]._type = std::stoi(arr[i]);
+            _col_metas[j++].type = std::stoi(arr[i]);
         }
     }
 

@@ -64,7 +64,7 @@ bool KVRiverDB::init_meta(const std::vector<ColMeta>& col_metas) {
     }
     _col_metas = col_metas;
     for (int i = 0; i < _col_metas.size(); ++i) {
-        _col_name_index_map[_col_metas[i]._col_name] = i;
+        _col_name_index_map[_col_metas[i].name] = i;
     }
     return true;
 }

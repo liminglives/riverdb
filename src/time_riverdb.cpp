@@ -107,18 +107,27 @@ bool TimeRiverDB::at(const std::string& kvalue, int index, RowReader* row_reader
     return true;
 }
 
+template <>
+bool TimeRiverDB::eq(const std::string& kvalue, uint64_t ts, RowReader* row_reader) {
+    return query(kvalue, ts, QueryOP::EQ, row_reader);
+}
+
+template <>
 bool TimeRiverDB::gt(const std::string& kvalue, uint64_t ts, RowReader* row_reader) {
     return query(kvalue, ts, QueryOP::GT, row_reader);
 }
 
+template <>
 bool TimeRiverDB::ge(const std::string& kvalue, uint64_t ts, RowReader* row_reader) {
     return query(kvalue, ts, QueryOP::GE, row_reader);
 }
 
+template <>
 bool TimeRiverDB::lt(const std::string& kvalue, uint64_t ts, RowReader* row_reader) {
     return query(kvalue, ts, QueryOP::LT, row_reader);
 }
 
+template <>
 bool TimeRiverDB::le(const std::string& kvalue, uint64_t ts, RowReader* row_reader) {
     return query(kvalue, ts, QueryOP::LE, row_reader);
 }
@@ -176,7 +185,7 @@ bool TimeRiverDB::compare(const std::vector<ColMeta>& col_metas) {
         for (unsigned int i = 0; i < col_metas.size(); ++i) {
             const ColMeta meta1 = col_metas[i];
             const ColMeta meta2 = _col_metas[i];
-            if (meta1._col_name != meta2._col_name || meta1._type != meta2._type) {
+            if (meta1.name != meta2.name || meta1.type != meta2.type) {
                 Log("meta not equal");
                 return false;
             }
@@ -190,7 +199,7 @@ bool TimeRiverDB::init_meta(const std::vector<ColMeta>& col_metas) {
     if (_col_metas.size() == 0) {
         _col_metas = col_metas;
         for (int i = 0; i < _col_metas.size(); ++i) {
-            _col_name_index_map[_col_metas[i]._col_name] = i;
+            _col_name_index_map[_col_metas[i].name] = i;
         }
     }
     if (col_metas.size() == 0 || !compare(col_metas)) {
@@ -239,6 +248,7 @@ void TimeRiverDB::append(const std::string& kvalue, uint64_t ts, char* data) {
 }
 
 bool TimeRiverDB::load(const std::string& fpath) {
+    Log("start load " + fpath);
     RiverDBReader reader(fpath);
     reader.read_header();
     const std::vector<ColMeta>& col_metas = reader.get_col_metas();
@@ -256,6 +266,7 @@ bool TimeRiverDB::load(const std::string& fpath) {
     unsigned int remain = data_size;
 
     while (remain > 0) {
+        //Log("row reader init, start:" + std::to_string(start));
         row_reader.init(buf + start, remain);
         uint64_t ts = 0;
         if (!row_reader.get<uint64_t>(_index_key, &ts)) {
@@ -269,12 +280,6 @@ bool TimeRiverDB::load(const std::string& fpath) {
 
         //Log("kvalue:" + kvalue + " ksize:" + std::to_string(kvalue.size()));
         append(kvalue, ts, buf + start);
-        //auto it = _data_index_map.find(kvalue);
-        //if (it == _data_index_map.end()) {
-        //    Log("new dataindex for " + kvalue);
-        //    _data_index_map[kvalue] = new DataIndex(kvalue, _index_key);
-        //}
-        //_data_index_map[kvalue]->append(ts, buf + start);
 
         unsigned int len = row_reader.get_len();
 

@@ -29,10 +29,96 @@ public:
 
     bool at(const std::string& kvalue, int index, RowReader* row_reader);
     bool get(const std::string& kvalue, uint64_t ts, RowReader* row_reader);
-    bool gt(const std::string& kvalue, uint64_t ts, RowReader* row_reader);
-    bool ge(const std::string& kvalue, uint64_t ts, RowReader* row_reader);
-    bool lt(const std::string& kvalue, uint64_t ts, RowReader* row_reader);
-    bool le(const std::string& kvalue, uint64_t ts, RowReader* row_reader);
+
+    template <class T>
+    bool eq(const T& kvalue, uint64_t ts, RowReader* row_reader) {
+        std::string k;
+        Util::get_str_from_val(kvalue, k);
+        return query(k, ts, QueryOP::EQ, row_reader);
+    }
+    template <class T>
+    bool gt(const T& kvalue, uint64_t ts, RowReader* row_reader) {
+        std::string k;
+        Util::get_str_from_val(kvalue, k);
+        return query(k, ts, QueryOP::GT, row_reader);
+    }
+
+    template <class T>
+    bool ge(const T& kvalue, uint64_t ts, RowReader* row_reader) {
+        std::string k;
+        Util::get_str_from_val(kvalue, k);
+        return query(k, ts, QueryOP::GE, row_reader);
+    }
+
+    template <class T>
+    bool lt(const T& kvalue, uint64_t ts, RowReader* row_reader) {
+        std::string k;
+        Util::get_str_from_val(kvalue, k);
+        return query(k, ts, QueryOP::LT, row_reader);
+    }
+    template <class T>
+    bool le(const T& kvalue, uint64_t ts, RowReader* row_reader) {
+        std::string k;
+        Util::get_str_from_val(kvalue, k);
+        return query(k, ts, QueryOP::LE, row_reader);
+    }
+
+    template <class T>
+    bool index(const T& kvalue, int index, RowReader* row_reader) {
+        std::string k;
+        Util::get_str_from_val(kvalue, k);
+        return at(k, index, row_reader);
+    }
+
+    template <class T>
+    bool index_range(const T& k, int index_start, int index_end, RowsReader* rows_reader) {
+        if (index_start < 0 || index_end < 0) {
+            return false;
+        }
+        std::string kvalue;
+        Util::get_str_from_val(k, kvalue);
+
+        DataIndex* di = get_data_index(kvalue);
+        if (di == NULL) {
+            Log("has no kvalue:" + kvalue);
+            return false;
+        }
+        char* data = NULL;
+        for (int i = index_start; i < index_end; ++i) {
+            if ((data = di->at(i)) != NULL) {
+                rows_reader->push(data);
+            }
+        }
+        return true;
+    }
+
+    template <class T>
+    bool range(const T& k, uint64_t ts_start, uint64_t ts_end, RowsReader* rows_reader) {
+        std::string kvalue;
+        Util::get_str_from_val(k, kvalue);
+
+        DataIndex* di = get_data_index(kvalue);
+        if (di == NULL) {
+            Log("has no kvalue:" + kvalue);
+            return false;
+        }
+        int start = di->get_index_by_ts(ts_start, QueryOP::GE);
+        if (start == -1) {
+            return false;
+        }
+        int end = di->get_index_by_ts(ts_start, QueryOP::LE);
+        if (end == -1) {
+            return false;
+        }
+        if (start > end) {
+            return false;
+        }
+        for (int i = start; i < end; ++i) {
+            rows_reader->push(di->at(i));
+        }
+
+        return true;
+    }
 
     unsigned int get_col_size() {
         return _col_metas.size();

@@ -40,14 +40,14 @@ public:
         if (index < 0 || index > _col_metas.size()) {
             return RET_ERROR;
         }
-        return _col_metas[index]._type;
+        return _col_metas[index].type;
     }
 
     int get_col_name(int index, std::string& col_name) {
         if (index < 0 || index > _col_metas.size()) {
             return RET_ERROR;
         }
-        col_name = _col_metas[index]._col_name;
+        col_name = _col_metas[index].name;
         return RET_OK;
     }
 

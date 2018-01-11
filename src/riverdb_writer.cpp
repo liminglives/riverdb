@@ -18,7 +18,7 @@ void RiverDBWriter::build_cols_dict(NormalFileReader& reader) {
 			Throw( "error line in dict:" + line);
 		}
 		DataType data_type = static_cast<DataType>(std::stoi(val[1], nullptr));
-		if (data_type <= Type_START || data_type >= Type_END) {
+		if (data_type <= DT_START || data_type >= DT_END) {
 			Throw( "unkonw type for [" + line + "]");
 		}
 		if (_col_datatype_map.find(val[0]) != _col_datatype_map.end()) {
@@ -104,7 +104,7 @@ void RiverDBWriter::parse_line(const std::string& line, std::vector<std::string>
     }
     for (unsigned int i = 0; i < cols.size(); ++i) {
         std::string val;
-        Util::parse_val_from_str(cols[i], _col_metas[i]._type, val);
+        Util::parse_val_from_str(cols[i], _col_metas[i].type, val);
         vals.push_back(val);
     }
 }
@@ -146,12 +146,12 @@ int RiverDBWriter::write_binary_line(IFileWriter* writer, const std::vector<std:
     }
     for (unsigned int i = 0; i < vals.size(); ++i) {
         char mark = '\0';
-        if (_col_metas[i]._type >= Type_INT16 && _col_metas[i]._type <= Type_LD) {
+        if (_col_metas[i].type >= DT_INT16 && _col_metas[i].type <= DT_LD) {
             mark = '0' + vals[i].size();
         }
         writer->write_char(mark);
         writer->write(vals[i].c_str(), vals[i].size());
-        if (_col_metas[i]._type == Type_STRING) {
+        if (_col_metas[i].type == DT_STRING) {
             writer->write_char('\0');
         }
     }
@@ -167,9 +167,9 @@ void RiverDBWriter::write_header(IFileWriter* writer) {
     std::string type_line;
     std::string name_line;
     for (auto it = _col_metas.begin(); it != _col_metas.end(); ++it) {
-        type_line.append(std::to_string(it->_type));
+        type_line.append(std::to_string(it->type));
         type_line.append(",");
-        name_line.append(it->_col_name);
+        name_line.append(it->name);
         name_line.append(",");
     }
     type_line.pop_back();

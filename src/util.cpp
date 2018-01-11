@@ -52,7 +52,7 @@ std::string& trim(std::string &s) {
 
 DataType get_datatype(const std::string& in) {
 	if (in.empty()) {
-		return Type_END;
+		return DT_END;
 	}
     bool has_dot = false;
     bool has_number = false;
@@ -69,11 +69,11 @@ DataType get_datatype(const std::string& in) {
 		}
     }
 	if (has_other || !has_number) {
-		return Type_STRING;
+		return DT_STRING;
 	} else if (has_dot && has_number) {
-		return Type_FLOAT;
+		return DT_FLOAT;
 	} else {
-		return Type_INT32;
+		return DT_INT32;
 	}
 }
 
@@ -82,61 +82,61 @@ void parse_val_from_str(const std::string& str, const int type, std::string& val
 		return;
 	}
 	switch (type) {
-		case Type_INT16:
+		case DT_INT16:
 		{
 		    int16_t v = static_cast<int16_t>(std::stoi(str));
 		    val.assign((char*)&v, sizeof(int16_t));
 			break;
 		}
-		case Type_INT32:
+		case DT_INT32:
 		{
 		    int32_t v = (std::stoi(str));
 		    val.assign((char*)&v, sizeof(int32_t));
 			break;
 		}
-		case Type_INT64:
+		case DT_INT64:
 		{
 		    int64_t v = std::stol(str);
 		    val.assign((char*)&v, sizeof(int64_t));
 			break;
 		}
-		case Type_UINT16:
+		case DT_UINT16:
 		{
 		    uint16_t v = static_cast<uint16_t>(std::stoul(str));
 		    val.assign((char*)&v, sizeof(uint16_t));
 			break;
 		}
-		case Type_UINT32:
+		case DT_UINT32:
 		{
 		    uint32_t v = static_cast<uint32_t>(std::stoul(str));
 		    val.assign((char*)&v, sizeof(uint32_t));
 			break;
 		}
-		case Type_UINT64:
+		case DT_UINT64:
 		{
 		    uint64_t v = static_cast<uint64_t>(std::stoul(str));
 		    val.assign((char*)&v, sizeof(uint64_t));
 			break;
 		}
-		case Type_FLOAT:
+		case DT_FLOAT:
 		{
 		    float v = std::stof(str);
 		    val.assign((char*)&v, sizeof(float));
 			break;
 		}
-		case Type_DOUBLE:
+		case DT_DOUBLE:
 		{
 		    double v = std::stod(str);
 		    val.assign((char*)&v, sizeof(double));
 			break;
 		}
-		case Type_LD:
+		case DT_LD:
 		{
 		    long double v = std::stold(str);
 		    val.assign((char*)&v, sizeof(long double));
 			break;
 		}
-		case Type_STRING:
+		case DT_STRING:
 		{
 		    val = str;
 			break;
@@ -228,9 +228,18 @@ void get_value(char* data, std::string* val) {
 
 template <> void get_str_from_val(const std::string& val, std::string& str) {
     str = val;
+    while (str.back() == '\0') {
+        str.pop_back();
+    }
 }
+
 template <> void get_str_from_val(const EmptyValue& val, std::string& str) {
     str.clear();
+}
+
+template <> int push_row(const std::string& val, std::vector<std::string>& row) {
+    row.push_back(val);
+    return RET_OK;
 }
 
 bool serialize_row(const std::vector<ColMeta>& col_metas, 
@@ -238,7 +247,7 @@ bool serialize_row(const std::vector<ColMeta>& col_metas,
         char*& data, unsigned int& len) {
     unsigned int row_size = row.size();
     if (row_size != col_metas.size()) {
-        Log("row size is wrong, row_size:" + std::to_string(row_size) + 
+        Log("row size is not expected, row_size:" + std::to_string(row_size) + 
                 " col_metas size:" + std::to_string(col_metas.size()));
         return false;
     }
@@ -246,9 +255,9 @@ bool serialize_row(const std::vector<ColMeta>& col_metas,
     len = 0;
     for (unsigned int i = 0; i < row_size; ++i) {
         len += row[i].size();
-        if (col_metas[i]._type >= Type_INT16 && col_metas[i]._type <= Type_LD) {
+        if (col_metas[i].type >= DT_INT16 && col_metas[i].type <= DT_LD) {
             ++len;
-        } else if (col_metas[i]._type == Type_STRING) {
+        } else if (col_metas[i].type == DT_STRING) {
             len += 2;
         }
     }
@@ -258,14 +267,14 @@ bool serialize_row(const std::vector<ColMeta>& col_metas,
     unsigned int cur = 0;
     for (unsigned int i = 0; i < row_size; ++i) {
         char mark = '\0';
-        if (col_metas[i]._type >= Type_INT16 && col_metas[i]._type <= Type_LD) {
+        if (col_metas[i].type >= DT_INT16 && col_metas[i].type <= DT_LD) {
             mark = '0' + row[i].size();
         }
         *(data + cur) = mark;
         ++cur;
         memcpy(data + cur, row[i].data(), row[i].size());
         cur += row[i].size();
-        if (col_metas[i]._type == Type_STRING) {
+        if (col_metas[i].type == DT_STRING) {
             *(data + cur) = '\0';
             ++cur;
         }

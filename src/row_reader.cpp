@@ -32,9 +32,8 @@ int RowReader::read_col(unsigned int max_len) {
     unsigned int read_len = 0;
     char mark = _data[_cur++];
     unsigned int pos = _cur;
-    //std::cout << mark << std::endl;
+    //std::cout << "mark::" << mark << std::endl;
     if (mark == '\0') {
-        //Log("string");
         while (pos < max_len && _data[pos] != '\0') {
             ++pos;
         }
@@ -47,9 +46,11 @@ int RowReader::read_col(unsigned int max_len) {
         pos += read_len;
     }
     if (read_len + _cur > max_len) {
+        printf("mark:%c, %d\n", mark, mark - '\0');
         Throw("read overflow cur:" + std::to_string(_cur) + 
                 " readn:" + std::to_string(read_len) +
-                " max_len:" + std::to_string(max_len));
+                " max_len:" + std::to_string(max_len) + 
+                " mark:" + (mark == '\n' ? "str" : std::to_string(read_len)));
     }
     _index.push_back(_data + _cur);
     _cur = pos;
@@ -71,13 +72,30 @@ bool RowReader::at(unsigned int index, std::string* value) {
     }
 
     // get rid of \0 which is end of string
-    if (_col_metas->at(index)._type == Type_STRING) {
+    if (_col_metas->at(index).type == DT_STRING) {
         end -= 1;
     }
     value->assign(start, end - start);
     return true;
 }
 
+RowsReader::RowsReader(std::vector<ColMeta>* col_metas, 
+            std::unordered_map<std::string, int>* col_index_map) : 
+    RowReader(col_metas, col_index_map) {}
 
+RowsReader::~RowsReader() {}
+
+void RowsReader::push(char* data, uint64_t max_len) {
+    _data_vec.push_back(std::make_pair(data, max_len));
+}
+
+bool RowsReader::next() {
+    if (_cur >= _data_vec.size()) {
+        return false;
+    }
+
+    const auto& data = _data_vec[_cur++];
+    return init(data.first, data.second);
+}
 
 } // namespace RiverDB

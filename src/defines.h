@@ -4,6 +4,11 @@
 
 namespace RiverDB {
 
+static const std::string RiverDBHeaderMark = "##!RiverDB##";
+static const std::string RiverDBHeaderV00 = "v0.0";
+static const std::string RiverDBHeaderV10 = "v1.0";
+static const std::string RiverDBHeaderSplit = ",";
+
 enum EnumFileOpenMode {
     FileOpenModeWrite = 0,
     FileOpenModeAppend,
@@ -30,20 +35,20 @@ using LONGDOUBLE = long double;
 using STRING = std::string;
 
 enum DataType {
-    Type_START = 0, // must be the first one
+    DT_START = 0, // must be the first one
 
-    Type_INT16= 1,	 // size 2
-    Type_INT32 = 2,	// size 4
-    Type_INT64 = 3,	// size 8 
-    Type_UINT16 = 4,  // 
-    Type_UINT32 = 5,  // 
-    Type_UINT64 = 6, // 
-    Type_FLOAT = 7, //  size 4
-    Type_DOUBLE = 8, // size 8
-    Type_LD = 9, // long double, size 16. not use 
-    Type_STRING = 10,
+    DT_INT16= 1,	 // size 2
+    DT_INT32 = 2,	// size 4
+    DT_INT64 = 3,	// size 8 
+    DT_UINT16 = 4,  // 
+    DT_UINT32 = 5,  // 
+    DT_UINT64 = 6, // 
+    DT_FLOAT = 7, //  size 4
+    DT_DOUBLE = 8, // size 8
+    DT_LD = 9, // long double, size 16. not use 
+    DT_STRING = 10,
 
-	Type_END // must be the last one
+	DT_END // must be the last one
 };
 
 enum class QueryOP : int {
@@ -52,13 +57,34 @@ enum class QueryOP : int {
     GE,
     LT,
     LE,
+    INDEX,
 };
 
-class ColMeta {
-public:
-    std::string _col_name;
-    int _type;
+struct ColMeta {
+    std::string name;
+    int type;
 };
+
+
+struct RowHeader {
+    int8_t flag;
+    int8_t type;
+    char reserved[2];
+    uint32_t len;
+};
+
+enum EnumRowHeaderFlag : int8_t {
+    RowHeaderFlag_Deleted = -1,  
+    RowHeaderFlag_OK = 0,  
+};
+
+enum EnumRowHeaderType : int8_t {
+    RowHeaderType_Add = 0,  
+    RowHeaderType_Del,  
+    RowHeaderType_Motify,  
+};
+
+
 
 class EmptyValue {
 };

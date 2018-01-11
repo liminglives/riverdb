@@ -2,6 +2,8 @@
 
 #include <unordered_map>
 #include <vector>
+#include <queue>
+#include <limits>
 
 #include "defines.h"
 #include "util.h"
@@ -12,9 +14,9 @@ class RowReader {
 public:
     RowReader(std::vector<ColMeta>* col_metas, 
             std::unordered_map<std::string, int>* col_index_map);
-    ~RowReader();
+    virtual ~RowReader();
 
-    bool init(char* data, unsigned int max_len);
+    bool init(char* data, unsigned int max_len = std::numeric_limits<unsigned int>::max());
 
     unsigned int get_len() {
         return _len;
@@ -51,6 +53,23 @@ private:
     unsigned int _cur;
     unsigned int _len;
 
+};
+
+class RowsReader : public RowReader {
+public:
+    RowsReader(std::vector<ColMeta>* col_metas, 
+            std::unordered_map<std::string, int>* col_index_map);
+    ~RowsReader();
+
+    void push(char* data, uint64_t max_len = std::numeric_limits<uint64_t>::max());
+    bool next();
+    void reset() {
+        _cur = 0;
+    }
+
+public:
+    int _cur = 0;
+    std::vector<std::pair<char*, uint64_t> > _data_vec;
 };
 
 } // namespace RiverDB

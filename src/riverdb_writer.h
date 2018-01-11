@@ -57,7 +57,7 @@ public:
         if (index < 0 || index >= _col_metas.size()) {
             return -1;
         }
-        return _col_metas[index]._type; 
+        return _col_metas[index].type; 
     }
 
     void flush() {
@@ -79,8 +79,8 @@ public:
     }
 
     void push_col_meta(const ColMeta& col_meta) {
-        if (col_meta._type <= Type_START || col_meta._type >= Type_END) {
-            Throw("push error, unknown data type " + std::to_string(col_meta._type));
+        if (col_meta.type <= DT_START || col_meta.type >= DT_END) {
+            Throw("push error, unknown data type " + std::to_string(col_meta.type));
         }
         _col_metas.push_back(col_meta);
     }
@@ -93,8 +93,8 @@ public:
 
     void push_col_meta(const std::string& col_name, int datatype) {
         ColMeta col_meta;
-        col_meta._col_name = col_name;
-        col_meta._type = datatype;
+        col_meta.name = col_name;
+        col_meta.type = datatype;
         push_col_meta(col_meta);
     }
 

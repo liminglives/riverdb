@@ -4,6 +4,7 @@
 #include <vector>
 #include <unordered_map>
 #include <unordered_set>
+#include <limits>
 
 #include "data_index.h"
 #include "row_reader.h"
@@ -22,7 +23,18 @@ public:
 
     RowReader* new_row_reader(); 
 
-    bool get(const std::string& kvalue, RowReader* row_reader);
+    template <class T>
+    bool get(const T& kvalue, RowReader* row_reader) {
+        std::string k;
+        Util::get_str_from_val(kvalue, k);
+        auto it = _index_map.find(k);
+        if (it == _index_map.end()) {
+            return false;
+        }
+        row_reader->init(it->second, std::numeric_limits<unsigned int>::max());
+        return true;
+    }
+
     bool set(const std::vector<std::string>& row);
 
 private:

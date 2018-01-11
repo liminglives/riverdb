@@ -109,6 +109,7 @@ RowReader* KVRiverDB::new_row_reader() {
     return new RowReader(&_col_metas, &_col_name_index_map);
 }
 
+template <>
 bool KVRiverDB::get(const std::string& kvalue, RowReader* row_reader) {
     auto it = _index_map.find(kvalue);
     if (it == _index_map.end()) {

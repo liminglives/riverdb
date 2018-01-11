@@ -132,6 +132,66 @@ bool TimeRiverDB::le(const std::string& kvalue, uint64_t ts, RowReader* row_read
     return query(kvalue, ts, QueryOP::LE, row_reader);
 }
 
+template <>
+bool TimeRiverDB::index(const std::string& kvalue, int index, RowReader* row_reader) {
+    return at(kvalue, index, row_reader);
+}
+
+template <>
+bool TimeRiverDB::index_range(const std::string& k, int index_start, int index_end, RowsReader* rows_reader) {
+    return index_range_real(k, index_start, index_end, rows_reader);
+}
+
+template <>
+bool TimeRiverDB::range(const std::string& k, uint64_t ts_start, uint64_t ts_end, RowsReader* rows_reader) {
+    return range_real(k, ts_start, ts_end, rows_reader);
+}
+
+bool TimeRiverDB::index_range_real(const std::string& kvalue, int index_start, int index_end, RowsReader* rows_reader) {
+    if (index_start < 0 || index_end < 0) {
+        return false;
+    }
+
+    DataIndex* di = get_data_index(kvalue);
+    if (di == NULL) {
+        Log("has no kvalue:" + kvalue);
+        return false;
+    }
+    char* data = NULL;
+    for (int i = index_start; i < index_end; ++i) {
+        if ((data = di->at(i)) != NULL) {
+            rows_reader->push(data);
+        }
+    }
+    return true;
+
+}
+
+bool TimeRiverDB::range_real(const std::string& kvalue, uint64_t ts_start, uint64_t ts_end, RowsReader* rows_reader) {
+    DataIndex* di = get_data_index(kvalue);
+    if (di == NULL) {
+        Log("has no kvalue:" + kvalue);
+        return false;
+    }
+    int start = di->get_index_by_ts(ts_start, QueryOP::GE);
+    if (start == -1) {
+        return false;
+    }
+    int end = di->get_index_by_ts(ts_start, QueryOP::LE);
+    if (end == -1) {
+        return false;
+    }
+    if (start > end) {
+        return false;
+    }
+    for (int i = start; i < end; ++i) {
+        rows_reader->push(di->at(i));
+    }
+
+    return true;
+
+}
+
 bool TimeRiverDB::query(const std::string& kvalue, uint64_t ts, QueryOP op, RowReader* row_reader) {
     DataIndex* di = get_data_index(kvalue);
     if (di == NULL) {

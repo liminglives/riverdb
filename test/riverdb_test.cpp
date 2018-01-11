@@ -10,7 +10,6 @@ protected:
     RiverDB::RiverDBReader* _reader;
 };
 
-/*
 TEST_F(RiverDBWriterTest, TestReadIllegalFile) {
     int is_catch = 0;
     try {
@@ -164,13 +163,14 @@ TEST_F(RiverDBWriterTest, TestKVRiverDB) {
     
     std::string kvalue;
     RiverDB::Util::get_str_from_val(11210, kvalue);
-    kvdb.get(kvalue, row_reader);
+    ASSERT_TRUE(kvdb.get(kvalue, row_reader)); 
+    ASSERT_TRUE(kvdb.get(11210, row_reader)); 
 
     int32_t k = 0;
-    row_reader->get<int32_t>("K", &k);
+    row_reader->get("K", &k);
     ASSERT_TRUE(k == 11210);
     uint64_t ts = 0;
-    row_reader->get<uint64_t>("TS", &ts);
+    row_reader->get("TS", &ts);
     ASSERT_TRUE(ts == 10);
 
     row.clear();
@@ -286,23 +286,24 @@ TEST_F(RiverDBWriterTest, TestRiverDBWithIntTypeKey) {
     RiverDB::Util::get_str_from_val(11210, kvalue);
 
     // at
-    db->at(kvalue, 1, row_reader);
+    //db->at(kvalue, 1, row_reader);
+    db->index(kvalue, 1, row_reader);
     int32_t k = 0;
-    row_reader->get<int32_t>("K", &k);
+    row_reader->get("K", &k);
     ASSERT_TRUE(k == 11210);
     uint64_t ts = 0;
-    row_reader->get<uint64_t>("TS", &ts);
+    row_reader->get("TS", &ts);
     ASSERT_TRUE(ts == 13);
     std::string a;
-    row_reader->get<std::string>("A", &a);
+    row_reader->get("A", &a);
     ASSERT_TRUE(a == "col_a11");
     double c = 0.0;
-    row_reader->get<double>("C", &c);
+    row_reader->get("C", &c);
     ASSERT_TRUE(c == 1.23131211);
 
-    // get
-    ASSERT_TRUE(db->get(kvalue, 11, row_reader) == false);
-    ASSERT_TRUE(db->get(kvalue, 13, row_reader) == true);
+    // eq 
+    ASSERT_TRUE(db->eq(11210, 11, row_reader) == false);
+    ASSERT_TRUE(db->eq(11210, 13, row_reader) == true);
     k = 0;
     row_reader->get<int32_t>("K", &k);
     ASSERT_TRUE(k == 11210);
@@ -311,8 +312,8 @@ TEST_F(RiverDBWriterTest, TestRiverDBWithIntTypeKey) {
     ASSERT_TRUE(ts == 13);
 
     // gt
-    ASSERT_TRUE(db->gt(kvalue, 19, row_reader) == false);
-    ASSERT_TRUE(db->gt(kvalue, 13, row_reader) == true);
+    ASSERT_TRUE(db->gt(11210, 19, row_reader) == false);
+    ASSERT_TRUE(db->gt(11210, 13, row_reader) == true);
     k = 0;
     row_reader->get<int32_t>("K", &k);
     ASSERT_TRUE(k == 11210);
@@ -321,10 +322,8 @@ TEST_F(RiverDBWriterTest, TestRiverDBWithIntTypeKey) {
     ASSERT_TRUE(ts == 16);
 
     // ge
-    std::string kvalue2; 
-    RiverDB::Util::get_str_from_val(11212, kvalue2);
-    ASSERT_TRUE(db->ge(kvalue2, 19, row_reader) == false);
-    ASSERT_TRUE(db->ge(kvalue2, 0, row_reader) == true);
+    ASSERT_TRUE(db->ge(11212, 19, row_reader) == false);
+    ASSERT_TRUE(db->ge(11212, 0, row_reader) == true);
     k = 0;
     row_reader->get<int32_t>("K", &k);
     ASSERT_TRUE(k == 11212);
@@ -333,8 +332,8 @@ TEST_F(RiverDBWriterTest, TestRiverDBWithIntTypeKey) {
     ASSERT_TRUE(ts == 12);
 
     // lt
-    ASSERT_TRUE(db->lt(kvalue2, 12, row_reader) == false);
-    ASSERT_TRUE(db->lt(kvalue2, 20, row_reader) == true);
+    ASSERT_TRUE(db->lt(11212, 12, row_reader) == false);
+    ASSERT_TRUE(db->lt(11212, 20, row_reader) == true);
     k = 0;
     row_reader->get<int32_t>("K", &k);
     ASSERT_TRUE(k == 11212);
@@ -343,15 +342,14 @@ TEST_F(RiverDBWriterTest, TestRiverDBWithIntTypeKey) {
     ASSERT_TRUE(ts == 18);
 
     // le
-    ASSERT_TRUE(db->le(kvalue2, 11, row_reader) == false);
-    ASSERT_TRUE(db->le(kvalue2, 12, row_reader) == true);
+    ASSERT_TRUE(db->le(11212, 11, row_reader) == false);
+    ASSERT_TRUE(db->le(11212, 12, row_reader) == true);
     k = 0;
     row_reader->get<int32_t>("K", &k);
     ASSERT_TRUE(k == 11212);
     ts = 0;
     row_reader->get<uint64_t>("TS", &ts);
     ASSERT_TRUE(ts == 12);
-
 
     delete row_reader;
     delete db;
@@ -460,10 +458,9 @@ TEST_F(RiverDBWriterTest, TestRiverDBWriteAndIndex) {
         std::cout << e.info() << std::endl;
     }
 }
-*/
 TEST_F(RiverDBWriterTest, TestTimeRiverDBLoad) {
-    //std::string data_file_path = "./testdata/market_data.rdb.2";
-    std::string data_file_path = "./market_data.rdb";
+    std::string data_file_path = "./testdata/market_data.rdb.3";
+    //std::string data_file_path = "./market_data.rdb";
     std::vector<RiverDB::ColMeta> col_metas = {
         {"RTId", RiverDB::DT_INT32},
         {"FType", RiverDB::DT_INT16},
@@ -597,23 +594,20 @@ TEST_F(RiverDBWriterTest, TestTimeRiverDBWrite) {
         ASSERT_TRUE(time_riverdb_->init(load_file_vec, data_file_path, col_metas)); 
 
 
-        std::string eid = "111111";
-        std::string uid = "111111.SZ";
-        for (int i = 0; i < 5; ++i) {
+        for (int i = 0; i < 10; ++i) {
             std::vector<std::string> row;
             RiverDB::Util::push_row<RiverDB::INT32>(i % 7, row);
             RiverDB::Util::push_row<RiverDB::INT16>(0, row);
-            RiverDB::Util::push_row<RiverDB::STRING>(eid, row);
-            RiverDB::Util::push_row<RiverDB::STRING>(uid, row);
-            std::cout << "row uid:" << row.back() << std::endl;
+            RiverDB::Util::push_row<RiverDB::STRING>("eid", row);
+            RiverDB::Util::push_row<RiverDB::STRING>("uid", row);
             RiverDB::Util::push_row<RiverDB::INT16>(static_cast<RiverDB::INT16>(8), row);
             RiverDB::Util::push_row<RiverDB::UINT64>(i, row);
 
-            RiverDB::Util::push_row<RiverDB::FLOAT>(2.0 + 0.01*i, row);
-            RiverDB::Util::push_row<RiverDB::FLOAT>(2.0 + 0.01*i, row);
-            RiverDB::Util::push_row<RiverDB::FLOAT>(2.0 + 0.01*i, row);
-            RiverDB::Util::push_row<RiverDB::FLOAT>(2.0 + 0.01*i, row);
-            RiverDB::Util::push_row<RiverDB::FLOAT>(2.0 + 0.01*i, row);
+            RiverDB::Util::push_row<RiverDB::DOUBLE>(2.0 + 0.01*i, row);
+            RiverDB::Util::push_row<RiverDB::DOUBLE>(2.0 + 0.01*i, row);
+            RiverDB::Util::push_row<RiverDB::DOUBLE>(2.0 + 0.01*i, row);
+            RiverDB::Util::push_row<RiverDB::DOUBLE>(2.0 + 0.01*i, row);
+            RiverDB::Util::push_row<RiverDB::DOUBLE>(2.0 + 0.01*i, row);
 
             RiverDB::Util::push_row<RiverDB::UINT32>(10, row);
             RiverDB::Util::push_row<RiverDB::UINT32>(10, row);
@@ -621,11 +615,11 @@ TEST_F(RiverDBWriterTest, TestTimeRiverDBWrite) {
             RiverDB::Util::push_row<RiverDB::UINT32>(10, row);
             RiverDB::Util::push_row<RiverDB::UINT32>(10, row);
 
-            RiverDB::Util::push_row<RiverDB::FLOAT>(1.0+0.01*i, row);
-            RiverDB::Util::push_row<RiverDB::FLOAT>(1.0+0.01*i, row);
-            RiverDB::Util::push_row<RiverDB::FLOAT>(1.0+0.01*i, row);
-            RiverDB::Util::push_row<RiverDB::FLOAT>(1.0+0.01*i, row);
-            RiverDB::Util::push_row<RiverDB::FLOAT>(1.0+0.01*i, row);
+            RiverDB::Util::push_row<RiverDB::DOUBLE>(1.0+0.01*i, row);
+            RiverDB::Util::push_row<RiverDB::DOUBLE>(1.0+0.01*i, row);
+            RiverDB::Util::push_row<RiverDB::DOUBLE>(1.0+0.01*i, row);
+            RiverDB::Util::push_row<RiverDB::DOUBLE>(1.0+0.01*i, row);
+            RiverDB::Util::push_row<RiverDB::DOUBLE>(1.0+0.01*i, row);
 
             RiverDB::Util::push_row<RiverDB::UINT32>(10, row);
             RiverDB::Util::push_row<RiverDB::UINT32>(10, row);
@@ -636,19 +630,14 @@ TEST_F(RiverDBWriterTest, TestTimeRiverDBWrite) {
         } 
 
         auto row_reader = time_riverdb_->new_row_reader();
-        std::string k = "";
-        RiverDB::Util::get_str_from_val(3, k);
-        if (!time_riverdb_->at(k, -1, row_reader)) {
-            std::cout << "has no key :" << 3 << std::endl;
-        } else {
-            RiverDB::UINT64 ts = 0;
-            row_reader->get("TimeStamp", &ts);
-            std::cout << "TimeStamp:" << ts << std::endl;
-        }
-
+        ASSERT_TRUE(time_riverdb_->index(3, -1, row_reader)); 
+        RiverDB::UINT64 ts = 0;
+        row_reader->get("TimeStamp", &ts);
+        ASSERT_TRUE(ts == 3);
 
     } catch (RiverDB::RTTException e) {
         std::cout << e.info() << std::endl; 
+        ASSERT_TRUE(false);
     }
 
 

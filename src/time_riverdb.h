@@ -72,53 +72,22 @@ public:
 
     template <class T>
     bool index_range(const T& k, int index_start, int index_end, RowsReader* rows_reader) {
-        if (index_start < 0 || index_end < 0) {
-            return false;
-        }
         std::string kvalue;
         Util::get_str_from_val(k, kvalue);
 
-        DataIndex* di = get_data_index(kvalue);
-        if (di == NULL) {
-            Log("has no kvalue:" + kvalue);
-            return false;
-        }
-        char* data = NULL;
-        for (int i = index_start; i < index_end; ++i) {
-            if ((data = di->at(i)) != NULL) {
-                rows_reader->push(data);
-            }
-        }
-        return true;
+        return index_range_real(kvalue, index_start, index_end, rows_reader);
     }
 
+    bool index_range_real(const std::string& k, int index_start, int index_end, RowsReader* rows_reader); 
+        
     template <class T>
     bool range(const T& k, uint64_t ts_start, uint64_t ts_end, RowsReader* rows_reader) {
         std::string kvalue;
         Util::get_str_from_val(k, kvalue);
-
-        DataIndex* di = get_data_index(kvalue);
-        if (di == NULL) {
-            Log("has no kvalue:" + kvalue);
-            return false;
-        }
-        int start = di->get_index_by_ts(ts_start, QueryOP::GE);
-        if (start == -1) {
-            return false;
-        }
-        int end = di->get_index_by_ts(ts_start, QueryOP::LE);
-        if (end == -1) {
-            return false;
-        }
-        if (start > end) {
-            return false;
-        }
-        for (int i = start; i < end; ++i) {
-            rows_reader->push(di->at(i));
-        }
-
-        return true;
+        return range_real(kvalue, ts_start, ts_end, rows_reader);
     }
+
+    bool range_real(const std::string& k, uint64_t ts_start, uint64_t ts_end, RowsReader* rows_reader); 
 
     unsigned int get_col_size() {
         return _col_metas.size();

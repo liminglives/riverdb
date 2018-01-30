@@ -56,6 +56,7 @@ public:
         Util::get_str_from_val(kvalue, k);
         return query(k, ts, QueryOP::LT, row_reader);
     }
+
     template <class T>
     bool le(const T& kvalue, uint64_t ts, RowReader* row_reader) {
         std::string k;
